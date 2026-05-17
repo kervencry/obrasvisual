@@ -1,11 +1,28 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
+import AnimatedHouse, { STAGES, type ObraStage } from "@/components/obra/AnimatedHouse";
+import StageSelector from "@/components/obra/StageSelector";
 
-const Hero = () => {
+const STAGE_INFO: Record<ObraStage, { etapa: string; status: string; prazo: string }> = {
+  terreno:     { etapa: "Terreno preparado", status: "Concluído ✓",      prazo: "Ago 2025" },
+  fundacao:    { etapa: "Fundação",          status: "Concluído ✓",      prazo: "Set 2025" },
+  estrutura:   { etapa: "Estrutura",         status: "Concluído ✓",      prazo: "Out 2025" },
+  alvenaria:   { etapa: "Alvenaria",         status: "Em andamento ⚡",   prazo: "Nov 2025" },
+  cobertura:   { etapa: "Cobertura",         status: "Em andamento ⚡",   prazo: "Dez 2025" },
+  instalacoes: { etapa: "Instalações",       status: "Em andamento ⚡",   prazo: "Jan 2026" },
+  acabamento:  { etapa: "Acabamento",        status: "Em andamento ⚡",   prazo: "Fev 2026" },
+  entregue:    { etapa: "Obra entregue!",    status: "Finalizado 🎉",     prazo: "Mar 2026" },
+};
+
+export default function Hero() {
+  const [stage, setStage] = useState<ObraStage>("alvenaria");
+  const info = STAGE_INFO[stage];
+  const stageData = STAGES.find((s) => s.id === stage)!;
+
   return (
     <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
-      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
       <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px]" />
@@ -59,7 +76,6 @@ const Hero = () => {
             </Button>
           </motion.div>
 
-          {/* Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -68,8 +84,8 @@ const Hero = () => {
           >
             {[
               { value: "2.500+", label: "Obras monitoradas" },
-              { value: "98%", label: "Satisfação" },
-              { value: "40%", label: "Menos visitas" },
+              { value: "98%",    label: "Satisfação" },
+              { value: "40%",    label: "Menos visitas" },
             ].map((s) => (
               <div key={s.label} className="text-center">
                 <p className="text-2xl md:text-3xl font-extrabold text-foreground">{s.value}</p>
@@ -79,58 +95,92 @@ const Hero = () => {
           </motion.div>
         </div>
 
-        {/* Hero visual - construction progress mockup */}
+        {/* INTERACTIVE DEMO */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.6 }}
           className="mt-20 max-w-5xl mx-auto"
         >
-          <div className="bg-card rounded-2xl border border-border shadow-2xl shadow-primary/5 p-2">
-            <div className="bg-muted rounded-xl p-8 md:p-12">
-              {/* Mock dashboard */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-card rounded-lg p-4 border border-border">
-                  <p className="text-xs text-muted-foreground mb-1">Progresso Geral</p>
-                  <p className="text-3xl font-bold text-primary">67%</p>
-                  <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: "67%" }} />
+          <div className="bg-card rounded-2xl border border-border shadow-2xl shadow-primary/5 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/50">
+              <div className="flex gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-red-400/70" />
+                <span className="w-3 h-3 rounded-full bg-yellow-400/70" />
+                <span className="w-3 h-3 rounded-full bg-green-400/70" />
+              </div>
+              <span className="text-xs text-muted-foreground mx-auto">
+                obravisual.com/obra/casa-santos-2025
+              </span>
+            </div>
+
+            <div className="p-6 md:p-8">
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="bg-muted/60 rounded-xl p-3 border border-border">
+                  <p className="text-xs text-muted-foreground mb-1">Progresso</p>
+                  <p className="text-2xl font-extrabold text-primary">{stageData.percent}%</p>
+                  <div className="mt-1.5 h-1.5 bg-background rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-primary rounded-full"
+                      animate={{ width: `${stageData.percent}%` }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                    />
                   </div>
                 </div>
-                <div className="bg-card rounded-lg p-4 border border-border">
+                <div className="bg-muted/60 rounded-xl p-3 border border-border">
                   <p className="text-xs text-muted-foreground mb-1">Etapa Atual</p>
-                  <p className="text-lg font-bold text-foreground">Alvenaria</p>
-                  <p className="text-sm text-accent font-medium">Em andamento</p>
+                  <p className="text-sm font-bold text-foreground leading-tight">{info.etapa}</p>
+                  <p className="text-xs text-accent font-medium mt-0.5">{info.status}</p>
                 </div>
-                <div className="bg-card rounded-lg p-4 border border-border">
+                <div className="bg-muted/60 rounded-xl p-3 border border-border">
                   <p className="text-xs text-muted-foreground mb-1">Prazo</p>
-                  <p className="text-lg font-bold text-foreground">15 Mar 2026</p>
-                  <p className="text-sm text-primary font-medium">No prazo ✓</p>
+                  <p className="text-sm font-bold text-foreground">{info.prazo}</p>
+                  <p className="text-xs text-primary font-medium mt-0.5">No prazo ✓</p>
                 </div>
               </div>
 
-              {/* SVG Building illustration */}
-              <div className="mt-8 flex justify-center">
-                <svg viewBox="0 0 400 200" className="w-full max-w-md" fill="none">
-                  {/* Ground */}
-                  <rect x="50" y="180" width="300" height="20" rx="4" className="fill-muted-foreground/20" />
-                  {/* Foundation */}
-                  <rect x="80" y="160" width="240" height="20" rx="2" className="fill-primary" />
-                  {/* Structure */}
-                  <rect x="90" y="100" width="10" height="60" className="fill-primary/80" />
-                  <rect x="300" y="100" width="10" height="60" className="fill-primary/80" />
-                  <rect x="90" y="95" width="220" height="10" rx="2" className="fill-primary/80" />
-                  {/* Walls - partially done */}
-                  <rect x="100" y="105" width="200" height="55" rx="2" className="fill-primary/40" />
-                  {/* Windows */}
-                  <rect x="120" y="115" width="30" height="25" rx="2" className="fill-background" />
-                  <rect x="185" y="115" width="30" height="25" rx="2" className="fill-background" />
-                  <rect x="250" y="115" width="30" height="25" rx="2" className="fill-background" />
-                  {/* Door */}
-                  <rect x="175" y="130" width="25" height="30" rx="2" className="fill-background" />
-                  {/* Roof outline (not built yet) */}
-                  <path d="M70 95 L200 30 L330 95" className="stroke-muted-foreground/30" strokeWidth="3" strokeDasharray="8 4" />
-                </svg>
+              <div className="grid md:grid-cols-2 gap-6 items-center">
+                <div className="bg-muted/40 rounded-xl p-4">
+                  <AnimatedHouse stage={stage} />
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground mb-1">Etapas da obra</p>
+                    <p className="text-xs text-muted-foreground">
+                      Clique em uma etapa para ver a casa sendo construída em tempo real
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    {STAGES.map((s, i) => {
+                      const currentIdx = STAGES.findIndex((x) => x.id === stage);
+                      const done   = i < currentIdx;
+                      const active = i === currentIdx;
+                      return (
+                        <motion.button
+                          key={s.id}
+                          onClick={() => setStage(s.id)}
+                          whileHover={{ x: 4 }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 text-left ${
+                            active
+                              ? "bg-primary/10 border border-primary/30 text-primary font-semibold"
+                              : done
+                              ? "bg-green-500/5 border border-green-500/20 text-muted-foreground"
+                              : "border border-transparent text-muted-foreground hover:bg-muted/60"
+                          }`}
+                        >
+                          <span className="text-base">{done ? "✅" : active ? "🔨" : "⬜"}</span>
+                          <span className="flex-1">{s.label}</span>
+                          <span className="text-xs opacity-60">{s.percent}%</span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 pt-4 border-t border-border">
+                <StageSelector current={stage} onChange={setStage} />
               </div>
             </div>
           </div>
@@ -138,6 +188,4 @@ const Hero = () => {
       </div>
     </section>
   );
-};
-
-export default Hero;
+}
