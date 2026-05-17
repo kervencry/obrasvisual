@@ -14,16 +14,551 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      aprovacoes: {
+        Row: {
+          aprovado: boolean
+          assinatura: string | null
+          comentario: string | null
+          created_at: string
+          etapa: Database["public"]["Enums"]["etapa_id"]
+          id: string
+          ip: string | null
+          obra_id: string
+          user_id: string
+        }
+        Insert: {
+          aprovado?: boolean
+          assinatura?: string | null
+          comentario?: string | null
+          created_at?: string
+          etapa: Database["public"]["Enums"]["etapa_id"]
+          id?: string
+          ip?: string | null
+          obra_id: string
+          user_id: string
+        }
+        Update: {
+          aprovado?: boolean
+          assinatura?: string | null
+          comentario?: string | null
+          created_at?: string
+          etapa?: Database["public"]["Enums"]["etapa_id"]
+          id?: string
+          ip?: string | null
+          obra_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aprovacoes_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diario_obra: {
+        Row: {
+          clima: string | null
+          conteudo: string
+          created_at: string
+          data: string
+          id: string
+          obra_id: string
+          titulo: string | null
+          trabalhadores: number | null
+          user_id: string
+        }
+        Insert: {
+          clima?: string | null
+          conteudo: string
+          created_at?: string
+          data?: string
+          id?: string
+          obra_id: string
+          titulo?: string | null
+          trabalhadores?: number | null
+          user_id: string
+        }
+        Update: {
+          clima?: string | null
+          conteudo?: string
+          created_at?: string
+          data?: string
+          id?: string
+          obra_id?: string
+          titulo?: string | null
+          trabalhadores?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diario_obra_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      etapas: {
+        Row: {
+          created_at: string
+          data_fim_prevista: string | null
+          data_fim_real: string | null
+          data_inicio: string | null
+          etapa: Database["public"]["Enums"]["etapa_id"]
+          id: string
+          obra_id: string
+          observacoes: string | null
+          ordem: number
+          percentual: number
+          status: Database["public"]["Enums"]["etapa_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_fim_prevista?: string | null
+          data_fim_real?: string | null
+          data_inicio?: string | null
+          etapa: Database["public"]["Enums"]["etapa_id"]
+          id?: string
+          obra_id: string
+          observacoes?: string | null
+          ordem: number
+          percentual?: number
+          status?: Database["public"]["Enums"]["etapa_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_fim_prevista?: string | null
+          data_fim_real?: string | null
+          data_inicio?: string | null
+          etapa?: Database["public"]["Enums"]["etapa_id"]
+          id?: string
+          obra_id?: string
+          observacoes?: string | null
+          ordem?: number
+          percentual?: number
+          status?: Database["public"]["Enums"]["etapa_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "etapas_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro: {
+        Row: {
+          categoria: string | null
+          created_at: string
+          data: string
+          descricao: string
+          etapa: Database["public"]["Enums"]["etapa_id"] | null
+          id: string
+          nota_fiscal_url: string | null
+          obra_id: string
+          tipo: Database["public"]["Enums"]["fin_tipo"]
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string
+          data?: string
+          descricao: string
+          etapa?: Database["public"]["Enums"]["etapa_id"] | null
+          id?: string
+          nota_fiscal_url?: string | null
+          obra_id: string
+          tipo: Database["public"]["Enums"]["fin_tipo"]
+          user_id: string
+          valor: number
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string
+          data?: string
+          descricao?: string
+          etapa?: Database["public"]["Enums"]["etapa_id"] | null
+          id?: string
+          nota_fiscal_url?: string | null
+          obra_id?: string
+          tipo?: Database["public"]["Enums"]["fin_tipo"]
+          user_id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fotos: {
+        Row: {
+          created_at: string
+          etapa: Database["public"]["Enums"]["etapa_id"] | null
+          id: string
+          legenda: string | null
+          obra_id: string
+          tipo: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          etapa?: Database["public"]["Enums"]["etapa_id"] | null
+          id?: string
+          legenda?: string | null
+          obra_id: string
+          tipo?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          etapa?: Database["public"]["Enums"]["etapa_id"] | null
+          id?: string
+          legenda?: string | null
+          obra_id?: string
+          tipo?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fotos_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensagens: {
+        Row: {
+          conteudo: string
+          created_at: string
+          etapa: Database["public"]["Enums"]["etapa_id"] | null
+          id: string
+          obra_id: string
+          user_id: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          etapa?: Database["public"]["Enums"]["etapa_id"] | null
+          id?: string
+          obra_id: string
+          user_id: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          etapa?: Database["public"]["Enums"]["etapa_id"] | null
+          id?: string
+          obra_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notificacoes: {
+        Row: {
+          created_at: string
+          id: string
+          lida: boolean
+          link: string | null
+          mensagem: string | null
+          obra_id: string | null
+          tipo: string | null
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lida?: boolean
+          link?: string | null
+          mensagem?: string | null
+          obra_id?: string | null
+          tipo?: string | null
+          titulo: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lida?: boolean
+          link?: string | null
+          mensagem?: string | null
+          obra_id?: string | null
+          tipo?: string | null
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obra_members: {
+        Row: {
+          created_at: string
+          id: string
+          obra_id: string
+          papel: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          obra_id: string
+          papel: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          obra_id?: string
+          papel?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obra_members_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras: {
+        Row: {
+          capa_url: string | null
+          created_at: string
+          data_fim_prevista: string | null
+          data_inicio: string | null
+          descricao: string | null
+          endereco: string | null
+          etapa_atual: Database["public"]["Enums"]["etapa_id"]
+          id: string
+          latitude: number | null
+          longitude: number | null
+          nome: string
+          owner_id: string
+          percentual: number
+          publico_token: string
+          status: Database["public"]["Enums"]["obra_status"]
+          tipo: Database["public"]["Enums"]["obra_tipo"]
+          updated_at: string
+          valor_previsto: number | null
+        }
+        Insert: {
+          capa_url?: string | null
+          created_at?: string
+          data_fim_prevista?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          endereco?: string | null
+          etapa_atual?: Database["public"]["Enums"]["etapa_id"]
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          nome: string
+          owner_id: string
+          percentual?: number
+          publico_token?: string
+          status?: Database["public"]["Enums"]["obra_status"]
+          tipo?: Database["public"]["Enums"]["obra_tipo"]
+          updated_at?: string
+          valor_previsto?: number | null
+        }
+        Update: {
+          capa_url?: string | null
+          created_at?: string
+          data_fim_prevista?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          endereco?: string | null
+          etapa_atual?: Database["public"]["Enums"]["etapa_id"]
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          nome?: string
+          owner_id?: string
+          percentual?: number
+          publico_token?: string
+          status?: Database["public"]["Enums"]["obra_status"]
+          tipo?: Database["public"]["Enums"]["obra_tipo"]
+          updated_at?: string
+          valor_previsto?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          empresa: string | null
+          id: string
+          nome: string | null
+          telefone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          empresa?: string | null
+          id: string
+          nome?: string | null
+          telefone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          empresa?: string | null
+          id?: string
+          nome?: string | null
+          telefone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      timeline_eventos: {
+        Row: {
+          created_at: string
+          descricao: string
+          id: string
+          metadata: Json | null
+          obra_id: string
+          tipo: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          descricao: string
+          id?: string
+          metadata?: Json | null
+          obra_id: string
+          tipo: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          id?: string
+          metadata?: Json | null
+          obra_id?: string
+          tipo?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_eventos_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_obra_publica: { Args: { _id: string; _token: string }; Returns: Json }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_obra_member: {
+        Args: { _obra: string; _user: string }
+        Returns: boolean
+      }
+      is_obra_owner: {
+        Args: { _obra: string; _user: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "admin"
+        | "cliente"
+        | "engenheiro"
+        | "arquiteto"
+        | "mestre_obras"
+      etapa_id:
+        | "terreno"
+        | "fundacao"
+        | "estrutura"
+        | "alvenaria"
+        | "cobertura"
+        | "instalacoes"
+        | "acabamento"
+        | "entregue"
+      etapa_status: "nao_iniciado" | "em_andamento" | "concluido" | "aprovado"
+      fin_tipo: "orcamento" | "gasto"
+      obra_status:
+        | "planejamento"
+        | "em_andamento"
+        | "pausada"
+        | "concluida"
+        | "cancelada"
+      obra_tipo: "casa" | "predio" | "reforma" | "comercial" | "outro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +685,28 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "cliente", "engenheiro", "arquiteto", "mestre_obras"],
+      etapa_id: [
+        "terreno",
+        "fundacao",
+        "estrutura",
+        "alvenaria",
+        "cobertura",
+        "instalacoes",
+        "acabamento",
+        "entregue",
+      ],
+      etapa_status: ["nao_iniciado", "em_andamento", "concluido", "aprovado"],
+      fin_tipo: ["orcamento", "gasto"],
+      obra_status: [
+        "planejamento",
+        "em_andamento",
+        "pausada",
+        "concluida",
+        "cancelada",
+      ],
+      obra_tipo: ["casa", "predio", "reforma", "comercial", "outro"],
+    },
   },
 } as const

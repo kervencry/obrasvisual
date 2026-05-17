@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
@@ -66,14 +67,18 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Button size="lg" className="text-base px-8 h-12 shadow-lg shadow-primary/25">
-              Começar Gratuitamente
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="lg" className="text-base px-8 h-12">
-              <Play className="mr-2 h-4 w-4" />
-              Ver Demonstração
-            </Button>
+            <Link to="/auth">
+              <Button size="lg" className="text-base px-8 h-12 shadow-lg shadow-primary/25">
+                Começar Gratuitamente
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/demo">
+              <Button variant="outline" size="lg" className="text-base px-8 h-12">
+                <Play className="mr-2 h-4 w-4" />
+                Ver Demonstração
+              </Button>
+            </Link>
           </motion.div>
 
           <motion.div
