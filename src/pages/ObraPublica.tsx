@@ -20,9 +20,10 @@ export default function ObraPublica() {
     // Workaround: open RLS for public when token matches via RPC. For now, fetch obra by id+token using rpc-less query relying on no RLS bypass:
     // We'll create a public view via supabase function call. As a simpler fallback, query allowed columns publicly.
     (async () => {
-      const { data, error } = await supabase.rpc("get_obra_publica", { _id: id, _token: token });
-      if (error || !data) { setErr("Link inválido ou expirado"); return; }
-      setObra(data.obra); setFotos(data.fotos || []);
+      const { data, error } = await supabase.rpc("get_obra_publica", { _id: id!, _token: token! });
+      const d = data as any;
+      if (error || !d) { setErr("Link inválido ou expirado"); return; }
+      setObra(d.obra); setFotos(d.fotos || []);
     })();
   }, [id, token]);
 
