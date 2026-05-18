@@ -516,3 +516,51 @@ function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[]) {
   y += 4; doc.setFontSize(14); doc.text(`Fotos (${fotos.length})`, 14, y);
   doc.save(`relatorio-${obra.nome}.pdf`);
 }
+
+function QrTab({ obra }: { obra: any }) {
+  const url = `${window.location.origin}/obra-publica/${obra.id}?t=${obra.publico_token}`;
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  function copiar() {
+    navigator.clipboard.writeText(url);
+    toast.success("Link copiado!");
+  }
+  function baixar() {
+    const canvas = canvasRef.current?.querySelector("canvas") as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = `qrcode-${obra.nome}.png`;
+    link.click();
+  }
+  function whatsapp() {
+    const txt = encodeURIComponent(`Acompanhe a obra ${obra.nome} em tempo real: ${url}`);
+    window.open(`https://wa.me/?text=${txt}`, "_blank");
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      <Card className="p-6 text-center">
+        <h3 className="font-bold mb-2">Portal do cliente</h3>
+        <p className="text-sm text-muted-foreground mb-4">Compartilhe este QR Code ou link com seu cliente</p>
+        <div ref={canvasRef} className="inline-block p-4 bg-white rounded-lg border">
+          <QRCodeCanvas value={url} size={220}/>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">Imprima este QR Code e cole na placa de obra</p>
+        <div className="flex flex-wrap gap-2 justify-center mt-4">
+          <Button size="sm" variant="outline" onClick={copiar}><Copy className="h-4 w-4 mr-1"/>Copiar link</Button>
+          <Button size="sm" variant="outline" onClick={baixar}><Download className="h-4 w-4 mr-1"/>Baixar QR</Button>
+          <Button size="sm" onClick={whatsapp}><Share2 className="h-4 w-4 mr-1"/>WhatsApp</Button>
+        </div>
+        <Input readOnly value={url} className="mt-4 text-xs"/>
+      </Card>
+      <Card className="p-4">
+        <h3 className="font-semibold mb-2">Pré-visualização do cliente</h3>
+        <p className="text-xs text-muted-foreground mb-3">É assim que o cliente verá a obra ao acessar o link</p>
+        <div className="rounded-lg border border-border overflow-hidden bg-muted/30 h-[420px]">
+          <iframe title="Preview" src={url} className="w-full h-full"/>
+        </div>
+      </Card>
+    </div>
+  );
+}
