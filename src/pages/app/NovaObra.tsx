@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,41 +10,58 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export default function NovaObra() {
-  const { user } = useAuth();
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ nome: "", endereco: "", tipo: "casa", valor_previsto: "", data_inicio: "", data_fim_prevista: "", descricao: "" });
+  const [form, setForm] = useState({
+    nome: "", endereco: "", tipo: "casa",
+    valor_previsto: "", data_inicio: "", data_fim_prevista: "", descricao: ""
+  });
 
- async function submit(e: React.FormEvent) {
-  e.preventDefault();
-  setLoading(true);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.nome.trim()) { toast.error("Nome da obra é obrigatório."); return; }
+    setLoading(true);
 
-  // Busca sessão atual diretamente do Supabase
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (!session?.user) {
-    toast.error("Sessão expirada. Faça login novamente.");
+    const { data: sessionData } = await supabase.auth.getSession();
+
+    if (!sessionData.session) {
+      toast.error("Sessão expirada. Faça login novamente.");
+      setLoading(false);
+      nav("/auth");
+      return;
+    }
+
+    const userId = sessionData.session.user.id;
+
+    const { data, error } = await supabase
+      .from("obras")
+      .insert({
+        owner_id: userId,
+        nome: form.nome.trim(),
+        endereco: form.endereco || null,
+        tipo: form.tipo as any,
+        valor_previsto: form.valor_previsto ? Number(form.valor_previsto) : null,
+        data_inicio: form.data_inicio || null,
+        data_fim_prevista: form.data_fim_prevista || null,
+        descricao: form.descricao || null,
+        etapa_atual: "terreno",
+        percentual: 0,
+        status: "planejamento",
+      })
+      .select()
+      .single();
+
     setLoading(false);
-    nav("/auth");
-    return;
+
+    if (error) {
+      console.error("Erro ao criar obra:", error);
+      toast.error(`Erro: ${error.message}`);
+      return;
+    }
+
+    toast.success("Obra criada com sucesso!");
+    nav(`/app/obras/${data.id}`);
   }
-
-  const { data, error } = await supabase.from("obras").insert({
-    owner_id: session.user.id,
-    nome: form.nome,
-    endereco: form.endereco || null,
-    tipo: form.tipo as any,
-    valor_previsto: form.valor_previsto ? Number(form.valor_previsto) : null,
-    data_inicio: form.data_inicio || null,
-    data_fim_prevista: form.data_fim_prevista || null,
-    descricao: form.descricao || null,
-  }).select().single();
-
-  setLoading(false);
-  if (error) { toast.error(error.message); return; }
-  toast.success("Obra criada!");
-  nav(`/app/obras/${data.id}`);
-}
 
   return (
     <div className="p-6 md:p-8 max-w-2xl mx-auto">
@@ -53,12 +69,19 @@ export default function NovaObra() {
       <p className="text-muted-foreground mb-6">Cadastre uma nova obra para acompanhamento</p>
       <Card className="p-6">
         <form onSubmit={submit} className="space-y-4">
-          <div><Label>Nome da obra *</Label><Input required value={form.nome} onChange={e=>setForm({...form,nome:e.target.value})}/></div>
-          <div><Label>Endereço</Label><Input value={form.endereco} onChange={e=>setForm({...form,endereco:e.target.value})}/></div>
+          <div>
+            <Label>Nome da obra *</Label>
+            <Input required value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} placeholder="Ex: Residência Silva" />
+          </div>
+          <div>
+            <Label>Endereço</Label>
+            <Input value={form.endereco} onChange={e => setForm({ ...form, endereco: e.target.value })} placeholder="Rua, número, bairro, cidade" />
+          </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Tipo</Label>
-              <Select value={form.tipo} onValueChange={v=>setForm({...form,tipo:v})}>
-                <SelectTrigger><SelectValue/></SelectTrigger>
+            <div>
+              <Label>Tipo</Label>
+              <Select value={form.tipo} onValueChange={v => setForm({ ...form, tipo: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="casa">Casa</SelectItem>
                   <SelectItem value="predio">Prédio</SelectItem>
@@ -68,14 +91,28 @@ export default function NovaObra() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Valor previsto (R$)</Label><Input type="number" step="0.01" value={form.valor_previsto} onChange={e=>setForm({...form,valor_previsto:e.target.value})}/></div>
+            <div>
+              <Label>Valor previsto (R$)</Label>
+              <Input type="number" step="0.01" min="0" value={form.valor_previsto} onChange={e => setForm({ ...form, valor_previsto: e.target.value })} placeholder="0,00" />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Data início</Label><Input type="date" value={form.data_inicio} onChange={e=>setForm({...form,data_inicio:e.target.value})}/></div>
-            <div><Label>Prazo (entrega)</Label><Input type="date" value={form.data_fim_prevista} onChange={e=>setForm({...form,data_fim_prevista:e.target.value})}/></div>
+            <div>
+              <Label>Data início</Label>
+              <Input type="date" value={form.data_inicio} onChange={e => setForm({ ...form, data_inicio: e.target.value })} />
+            </div>
+            <div>
+              <Label>Prazo (entrega)</Label>
+              <Input type="date" value={form.data_fim_prevista} onChange={e => setForm({ ...form, data_fim_prevista: e.target.value })} />
+            </div>
           </div>
-          <div><Label>Descrição</Label><Textarea rows={3} value={form.descricao} onChange={e=>setForm({...form,descricao:e.target.value})}/></div>
-          <Button type="submit" disabled={loading} className="w-full">{loading?"Criando...":"Criar obra"}</Button>
+          <div>
+            <Label>Descrição</Label>
+            <Textarea rows={3} value={form.descricao} onChange={e => setForm({ ...form, descricao: e.target.value })} placeholder="Descreva a obra, detalhes importantes..." />
+          </div>
+          <Button type="submit" disabled={loading} className="w-full h-11 text-base">
+            {loading ? "Criando obra..." : "Criar obra"}
+          </Button>
         </form>
       </Card>
     </div>
