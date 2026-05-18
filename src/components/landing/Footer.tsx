@@ -1,55 +1,43 @@
 import { Building2 } from "lucide-react";
 
-const Footer = () => {
-  return (
-    <footer className="bg-foreground text-background py-16">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          <div className="md:col-span-1">
-            <div className="flex items-center gap-2 font-bold text-xl mb-3" style={{ fontFamily: 'Plus Jakarta Sans' }}>
-              <Building2 className="h-6 w-6" />
-              <span>ObraViva</span>
-            </div>
-            <p className="text-sm text-background/60 leading-relaxed">
-              Plataforma inteligente de acompanhamento de obras para a construção civil.
-            </p>
-          </div>
-
-          {[
-            {
-              title: "Produto",
-              links: ["Funcionalidades", "Planos", "Integrações", "Segurança"],
-            },
-            {
-              title: "Empresa",
-              links: ["Sobre", "Blog", "Carreiras", "Contato"],
-            },
-            {
-              title: "Suporte",
-              links: ["Central de Ajuda", "Documentação", "Status", "Termos de Uso"],
-            },
-          ].map((col) => (
-            <div key={col.title}>
-              <h4 className="font-semibold text-sm mb-4">{col.title}</h4>
-              <ul className="space-y-2">
-                {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm text-background/60 hover:text-background transition-colors">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+const Footer = () => (
+  <footer className="border-t border-border bg-muted/20">
+    <div className="container mx-auto px-4 py-10 grid md:grid-cols-4 gap-8 text-sm">
+      <div>
+        <div className="flex items-center gap-2 font-bold text-lg mb-2">
+          <Building2 className="h-6 w-6 text-primary" />
+          <span>Obra<span className="text-primary">Visual</span></span>
         </div>
-
-        <div className="mt-12 pt-8 border-t border-background/10 text-center text-sm text-background/40">
-          © {new Date().getFullYear()} ObraViva. Todos os direitos reservados.
-        </div>
+        <p className="text-muted-foreground">Acompanhamento de obras em tempo real para engenheiros, arquitetos e clientes.</p>
       </div>
-    </footer>
-  );
-};
+      <div>
+        <p className="font-semibold mb-2">Produto</p>
+        <ul className="space-y-1 text-muted-foreground">
+          <li><a href="#features" className="hover:text-foreground">Funcionalidades</a></li>
+          <li><a href="#how" className="hover:text-foreground">Como funciona</a></li>
+          <li><a href="#pricing" className="hover:text-foreground">Planos</a></li>
+          <li><a href="#faq" className="hover:text-foreground">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <p className="font-semibold mb-2">Empresa</p>
+        <ul className="space-y-1 text-muted-foreground">
+          <li><a href="#" className="hover:text-foreground">Sobre</a></li>
+          <li><a href="#" className="hover:text-foreground">Contato</a></li>
+        </ul>
+      </div>
+      <div>
+        <p className="font-semibold mb-2">Legal</p>
+        <ul className="space-y-1 text-muted-foreground">
+          <li><a href="#" className="hover:text-foreground">Termos</a></li>
+          <li><a href="#" className="hover:text-foreground">Privacidade</a></li>
+        </ul>
+      </div>
+    </div>
+    <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
+      © {new Date().getFullYear()} ObraVisual. Todos os direitos reservados.
+    </div>
+  </footer>
+);
 
 export default Footer;

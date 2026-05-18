@@ -428,6 +428,7 @@ export type Database = {
           empresa: string | null
           id: string
           nome: string | null
+          preferencias: Json
           telefone: string | null
           updated_at: string
         }
@@ -438,6 +439,7 @@ export type Database = {
           empresa?: string | null
           id: string
           nome?: string | null
+          preferencias?: Json
           telefone?: string | null
           updated_at?: string
         }
@@ -448,6 +450,7 @@ export type Database = {
           empresa?: string | null
           id?: string
           nome?: string | null
+          preferencias?: Json
           telefone?: string | null
           updated_at?: string
         }
@@ -517,6 +520,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      buscar_usuario_por_email: {
+        Args: { _email: string }
+        Returns: {
+          id: string
+          nome: string
+        }[]
+      }
       get_obra_publica: { Args: { _id: string; _token: string }; Returns: Json }
       has_role: {
         Args: {

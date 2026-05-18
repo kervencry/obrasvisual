@@ -15,11 +15,13 @@ import { toast } from "sonner";
 import AnimatedHouse, { STAGES, type ObraStage } from "@/components/obra/AnimatedHouse";
 import BeforeAfter from "@/components/obra/BeforeAfter";
 import ClimaWidget from "@/components/obra/ClimaWidget";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Upload, Send, CheckCircle2, FileText, DollarSign, BookOpen, MessageSquare, Clock, QrCode, Box, ImageIcon, ListChecks } from "lucide-react";
+import { ArrowLeft, Upload, Send, CheckCircle2, FileText, DollarSign, BookOpen, MessageSquare, Clock, QrCode, Box, ImageIcon, ListChecks, Users, Copy, Download, Share2 } from "lucide-react";
 import jsPDF from "jspdf";
+import MembrosObra from "@/components/obra/MembrosObra";
+import { notificar, notificarMembros } from "@/lib/notificar";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -85,6 +87,7 @@ export default function ObraDetalhe() {
     const s = STAGES.find(x=>x.id===newStage)!;
     await supabase.from("obras").update({ etapa_atual: newStage, percentual: s.percent }).eq("id", obra.id);
     await logEvento("progresso", `Etapa atual: ${newStage} (${s.percent}%)`);
+    await notificar(obra.owner_id, obra.id, "Etapa atualizada", `Nova etapa atual: ${newStage} (${s.percent}%)`, "info", `/app/obras/${obra.id}`);
     refresh();
   }
 
@@ -116,6 +119,7 @@ export default function ObraDetalhe() {
           <TabsTrigger value="aprov"><CheckCircle2 className="h-4 w-4 mr-1"/>Aprovações</TabsTrigger>
           <TabsTrigger value="antes"><ImageIcon className="h-4 w-4 mr-1"/>Antes/depois</TabsTrigger>
           <TabsTrigger value="qr"><QrCode className="h-4 w-4 mr-1"/>QR / Cliente</TabsTrigger>
+          <TabsTrigger value="equipe"><Users className="h-4 w-4 mr-1"/>Equipe</TabsTrigger>
           <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1"/>Relatório</TabsTrigger>
         </TabsList>
 
@@ -245,12 +249,12 @@ export default function ObraDetalhe() {
 
         {/* QR */}
         <TabsContent value="qr" className="mt-4">
-          <Card className="p-6 text-center max-w-md mx-auto">
-            <h3 className="font-bold mb-2">Portal do cliente</h3>
-            <p className="text-sm text-muted-foreground mb-4">Compartilhe este QR Code ou link com seu cliente</p>
-            <div className="inline-block p-4 bg-white rounded-lg border"><QRCodeSVG value={`${window.location.origin}/obra-publica/${obra.id}?t=${obra.publico_token}`} size={200}/></div>
-            <Input readOnly value={`${window.location.origin}/obra-publica/${obra.id}?t=${obra.publico_token}`} className="mt-4 text-xs"/>
-          </Card>
+          <QrTab obra={obra}/>
+        </TabsContent>
+
+        {/* EQUIPE */}
+        <TabsContent value="equipe" className="mt-4">
+          <MembrosObra obraId={obra.id} ownerId={obra.owner_id}/>
         </TabsContent>
 
         {/* RELATÓRIO */}
@@ -284,6 +288,7 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
     setUploading(false);
     if (error) return toast.error(error.message);
     await supabase.from("timeline_eventos").insert({ obra_id: obraId, user_id: userId, tipo: "foto", descricao: `Nova foto na etapa ${stage}` });
+    await notificarMembros(obraId, userId, "Nova foto na obra", `Etapa ${stage}${legenda ? ": " + legenda : ""}`, "info", `/app/obras/${obraId}`);
     setLegenda(""); onUpload(); toast.success("Foto enviada!");
   }
 
@@ -438,6 +443,7 @@ function AprovacoesTab({ obraId, aprov, userId, onChange }: any) {
     if (!assinatura) return toast.error("Digite seu nome como assinatura");
     const { error } = await supabase.from("aprovacoes").insert({ obra_id: obraId, user_id: userId, etapa, assinatura, comentario });
     if (error) return toast.error(error.message);
+    await notificarMembros(obraId, userId, "Nova aprovação digital", `Etapa ${etapa} aprovada por ${assinatura}`, "sucesso", `/app/obras/${obraId}`);
     setAssinatura(""); setComentario(""); onChange(); toast.success("Etapa aprovada digitalmente!");
   }
   return (
@@ -509,4 +515,52 @@ function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[]) {
 
   y += 4; doc.setFontSize(14); doc.text(`Fotos (${fotos.length})`, 14, y);
   doc.save(`relatorio-${obra.nome}.pdf`);
+}
+
+function QrTab({ obra }: { obra: any }) {
+  const url = `${window.location.origin}/obra-publica/${obra.id}?t=${obra.publico_token}`;
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  function copiar() {
+    navigator.clipboard.writeText(url);
+    toast.success("Link copiado!");
+  }
+  function baixar() {
+    const canvas = canvasRef.current?.querySelector("canvas") as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = `qrcode-${obra.nome}.png`;
+    link.click();
+  }
+  function whatsapp() {
+    const txt = encodeURIComponent(`Acompanhe a obra ${obra.nome} em tempo real: ${url}`);
+    window.open(`https://wa.me/?text=${txt}`, "_blank");
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      <Card className="p-6 text-center">
+        <h3 className="font-bold mb-2">Portal do cliente</h3>
+        <p className="text-sm text-muted-foreground mb-4">Compartilhe este QR Code ou link com seu cliente</p>
+        <div ref={canvasRef} className="inline-block p-4 bg-white rounded-lg border">
+          <QRCodeCanvas value={url} size={220}/>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">Imprima este QR Code e cole na placa de obra</p>
+        <div className="flex flex-wrap gap-2 justify-center mt-4">
+          <Button size="sm" variant="outline" onClick={copiar}><Copy className="h-4 w-4 mr-1"/>Copiar link</Button>
+          <Button size="sm" variant="outline" onClick={baixar}><Download className="h-4 w-4 mr-1"/>Baixar QR</Button>
+          <Button size="sm" onClick={whatsapp}><Share2 className="h-4 w-4 mr-1"/>WhatsApp</Button>
+        </div>
+        <Input readOnly value={url} className="mt-4 text-xs"/>
+      </Card>
+      <Card className="p-4">
+        <h3 className="font-semibold mb-2">Pré-visualização do cliente</h3>
+        <p className="text-xs text-muted-foreground mb-3">É assim que o cliente verá a obra ao acessar o link</p>
+        <div className="rounded-lg border border-border overflow-hidden bg-muted/30 h-[420px]">
+          <iframe title="Preview" src={url} className="w-full h-full"/>
+        </div>
+      </Card>
+    </div>
+  );
 }
