@@ -16,25 +16,36 @@ export default function NovaObra() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ nome: "", endereco: "", tipo: "casa", valor_previsto: "", data_inicio: "", data_fim_prevista: "", descricao: "" });
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user) return;
-    setLoading(true);
-    const { data, error } = await supabase.from("obras").insert({
-      owner_id: user.id,
-      nome: form.nome,
-      endereco: form.endereco || null,
-      tipo: form.tipo as any,
-      valor_previsto: form.valor_previsto ? Number(form.valor_previsto) : null,
-      data_inicio: form.data_inicio || null,
-      data_fim_prevista: form.data_fim_prevista || null,
-      descricao: form.descricao || null,
-    }).select().single();
+ async function submit(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
+
+  // Busca sessão atual diretamente do Supabase
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session?.user) {
+    toast.error("Sessão expirada. Faça login novamente.");
     setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Obra criada!");
-    nav(`/app/obras/${data.id}`);
+    nav("/auth");
+    return;
   }
+
+  const { data, error } = await supabase.from("obras").insert({
+    owner_id: session.user.id,
+    nome: form.nome,
+    endereco: form.endereco || null,
+    tipo: form.tipo as any,
+    valor_previsto: form.valor_previsto ? Number(form.valor_previsto) : null,
+    data_inicio: form.data_inicio || null,
+    data_fim_prevista: form.data_fim_prevista || null,
+    descricao: form.descricao || null,
+  }).select().single();
+
+  setLoading(false);
+  if (error) { toast.error(error.message); return; }
+  toast.success("Obra criada!");
+  nav(`/app/obras/${data.id}`);
+}
 
   return (
     <div className="p-6 md:p-8 max-w-2xl mx-auto">
