@@ -87,6 +87,7 @@ export default function ObraDetalhe() {
     const s = STAGES.find(x=>x.id===newStage)!;
     await supabase.from("obras").update({ etapa_atual: newStage, percentual: s.percent }).eq("id", obra.id);
     await logEvento("progresso", `Etapa atual: ${newStage} (${s.percent}%)`);
+    await notificar(obra.owner_id, obra.id, "Etapa atualizada", `Nova etapa atual: ${newStage} (${s.percent}%)`, "info", `/app/obras/${obra.id}`);
     refresh();
   }
 
