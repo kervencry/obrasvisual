@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import AnimatedHouse, { STAGES, type ObraStage } from "@/components/obra/AnimatedHouse";
 import BeforeAfter from "@/components/obra/BeforeAfter";
 import ClimaWidget from "@/components/obra/ClimaWidget";
-import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Upload, Send, CheckCircle2, FileText, DollarSign, BookOpen, MessageSquare, Clock, QrCode, Box, ImageIcon, ListChecks, Users, Copy, Download, Share2 } from "lucide-react";
