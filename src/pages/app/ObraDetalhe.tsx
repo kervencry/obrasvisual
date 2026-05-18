@@ -15,11 +15,13 @@ import { toast } from "sonner";
 import AnimatedHouse, { STAGES, type ObraStage } from "@/components/obra/AnimatedHouse";
 import BeforeAfter from "@/components/obra/BeforeAfter";
 import ClimaWidget from "@/components/obra/ClimaWidget";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Upload, Send, CheckCircle2, FileText, DollarSign, BookOpen, MessageSquare, Clock, QrCode, Box, ImageIcon, ListChecks } from "lucide-react";
+import { ArrowLeft, Upload, Send, CheckCircle2, FileText, DollarSign, BookOpen, MessageSquare, Clock, QrCode, Box, ImageIcon, ListChecks, Users, Copy, Download, Share2 } from "lucide-react";
 import jsPDF from "jspdf";
+import MembrosObra from "@/components/obra/MembrosObra";
+import { notificar, notificarMembros } from "@/lib/notificar";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -116,6 +118,7 @@ export default function ObraDetalhe() {
           <TabsTrigger value="aprov"><CheckCircle2 className="h-4 w-4 mr-1"/>Aprovações</TabsTrigger>
           <TabsTrigger value="antes"><ImageIcon className="h-4 w-4 mr-1"/>Antes/depois</TabsTrigger>
           <TabsTrigger value="qr"><QrCode className="h-4 w-4 mr-1"/>QR / Cliente</TabsTrigger>
+          <TabsTrigger value="equipe"><Users className="h-4 w-4 mr-1"/>Equipe</TabsTrigger>
           <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1"/>Relatório</TabsTrigger>
         </TabsList>
 
@@ -245,12 +248,12 @@ export default function ObraDetalhe() {
 
         {/* QR */}
         <TabsContent value="qr" className="mt-4">
-          <Card className="p-6 text-center max-w-md mx-auto">
-            <h3 className="font-bold mb-2">Portal do cliente</h3>
-            <p className="text-sm text-muted-foreground mb-4">Compartilhe este QR Code ou link com seu cliente</p>
-            <div className="inline-block p-4 bg-white rounded-lg border"><QRCodeSVG value={`${window.location.origin}/obra-publica/${obra.id}?t=${obra.publico_token}`} size={200}/></div>
-            <Input readOnly value={`${window.location.origin}/obra-publica/${obra.id}?t=${obra.publico_token}`} className="mt-4 text-xs"/>
-          </Card>
+          <QrTab obra={obra}/>
+        </TabsContent>
+
+        {/* EQUIPE */}
+        <TabsContent value="equipe" className="mt-4">
+          <MembrosObra obraId={obra.id} ownerId={obra.owner_id}/>
         </TabsContent>
 
         {/* RELATÓRIO */}
@@ -284,6 +287,7 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
     setUploading(false);
     if (error) return toast.error(error.message);
     await supabase.from("timeline_eventos").insert({ obra_id: obraId, user_id: userId, tipo: "foto", descricao: `Nova foto na etapa ${stage}` });
+    await notificarMembros(obraId, userId, "Nova foto na obra", `Etapa ${stage}${legenda ? ": " + legenda : ""}`, "info", `/app/obras/${obraId}`);
     setLegenda(""); onUpload(); toast.success("Foto enviada!");
   }
 
