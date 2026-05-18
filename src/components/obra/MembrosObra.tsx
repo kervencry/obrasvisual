@@ -33,9 +33,17 @@ export default function MembrosObra({ obraId, ownerId }: { obraId: string; owner
   async function load() {
     const { data: m } = await supabase
       .from("obra_members")
-      .select("id, user_id, papel, profiles:profiles!inner(nome, empresa)")
+      .select("id, user_id, papel")
       .eq("obra_id", obraId);
-    setMembros(m ?? []);
+    const list = m ?? [];
+    if (list.length) {
+      const ids = list.map((x: any) => x.user_id);
+      const { data: profs } = await supabase.from("profiles").select("id, nome, empresa").in("id", ids);
+      const byId = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      setMembros(list.map((x: any) => ({ ...x, profile: byId.get(x.user_id) })));
+    } else {
+      setMembros([]);
+    }
     const { data: o } = await supabase.from("profiles").select("nome, empresa").eq("id", ownerId).maybeSingle();
     setOwnerProfile(o);
   }
@@ -130,10 +138,10 @@ export default function MembrosObra({ obraId, ownerId }: { obraId: string; owner
           {membros.map((m:any) => (
             <Card key={m.id} className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-semibold">{(m.profiles?.nome ?? "?").charAt(0).toUpperCase()}</div>
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-semibold">{(m.profile?.nome ?? "?").charAt(0).toUpperCase()}</div>
                 <div>
-                  <p className="font-medium">{m.profiles?.nome ?? "Sem nome"}</p>
-                  <p className="text-xs text-muted-foreground">{m.profiles?.empresa ?? ""}</p>
+                  <p className="font-medium">{m.profile?.nome ?? "Sem nome"}</p>
+                  <p className="text-xs text-muted-foreground">{m.profile?.empresa ?? ""}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -150,7 +158,7 @@ export default function MembrosObra({ obraId, ownerId }: { obraId: string; owner
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={()=>remover(m.id, m.user_id, m.profiles?.nome)}>Remover</AlertDialogAction>
+                        <AlertDialogAction onClick={()=>remover(m.id, m.user_id, m.profile?.nome)}>Remover</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
