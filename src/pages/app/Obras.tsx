@@ -5,7 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Building2 } from "lucide-react";
+import { Plus, Building2, AlertTriangle } from "lucide-react";
+
+function estaAtrasada(o: any) {
+  if (!o.data_fim_prevista) return false;
+  const fim = new Date(o.data_fim_prevista);
+  return fim < new Date() && o.status !== "concluida" && o.percentual < 100;
+}
 
 export default function Obras() {
   const [obras, setObras] = useState<any[]>([]);
@@ -40,9 +46,14 @@ export default function Obras() {
           {obras.map(o => (
             <Link key={o.id} to={`/app/obras/${o.id}`}>
               <Card className="p-4 hover:shadow-lg transition cursor-pointer h-full">
-                <div className="flex items-start justify-between mb-2">
+                <div className="flex items-start justify-between mb-2 gap-2">
                   <h3 className="font-bold text-lg">{o.nome}</h3>
-                  <Badge variant="outline">{o.status}</Badge>
+                  <div className="flex flex-col gap-1 items-end">
+                    <Badge variant="outline">{o.status}</Badge>
+                    {estaAtrasada(o) && (
+                      <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3"/>Atrasada</Badge>
+                    )}
+                  </div>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">{o.endereco || "Sem endereço"}</p>
                 <div className="space-y-1">
