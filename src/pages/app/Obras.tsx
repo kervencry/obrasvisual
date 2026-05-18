@@ -1,71 +1,216 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Plus, Building2, AlertTriangle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search, Building2, MapPin, Calendar, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
+import AnimatedHouse from "@/components/obra/AnimatedHouse";
 
-function estaAtrasada(o: any) {
-  if (!o.data_fim_prevista) return false;
-  const fim = new Date(o.data_fim_prevista);
-  return fim < new Date() && o.status !== "concluida" && o.percentual < 100;
-}
+const STATUS_LABEL: Record<string, string> = {
+  planejamento: "Planejamento",
+  em_andamento: "Em andamento",
+  pausada: "Pausada",
+  concluida: "Concluída",
+  cancelada: "Cancelada",
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  planejamento: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  em_andamento: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+  pausada: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+  concluida: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  cancelada: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+};
 
 export default function Obras() {
+  const nav = useNavigate();
   const [obras, setObras] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [busca, setBusca] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("todos");
+  const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [ordenacao, setOrdenacao] = useState("recente");
 
   useEffect(() => {
-    supabase.from("obras").select("*").order("created_at", { ascending: false }).then(({ data }) => {
-      setObras(data ?? []); setLoading(false);
-    });
+    async function load() {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) { nav("/auth"); return; }
+      const userId = sessionData.session.user.id;
+      const { data } = await supabase
+        .from("obras")
+        .select("*")
+        .or(`owner_id.eq.${userId}`)
+        .order("created_at", { ascending: false });
+      setObras(data ?? []);
+      setLoading(false);
+    }
+    load();
   }, []);
 
+  const obrasFiltradas = obras
+    .filter(o => {
+      const matchBusca = o.nome.toLowerCase().includes(busca.toLowerCase()) ||
+        (o.endereco ?? "").toLowerCase().includes(busca.toLowerCase());
+      const matchStatus = filtroStatus === "todos" || o.status === filtroStatus;
+      const matchTipo = filtroTipo === "todos" || o.tipo === filtroTipo;
+      return matchBusca && matchStatus && matchTipo;
+    })
+    .sort((a, b) => {
+      if (ordenacao === "recente") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (ordenacao === "nome") return a.nome.localeCompare(b.nome);
+      if (ordenacao === "progresso") return b.percentual - a.percentual;
+      return 0;
+    });
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-6 md:p-8 max-w-6xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-extrabold">Minhas obras</h1>
-          <p className="text-muted-foreground">Acompanhe todas as suas obras em um só lugar</p>
+          <h1 className="text-3xl font-extrabold">Minhas Obras</h1>
+          <p className="text-muted-foreground text-sm mt-1">{obras.length} obra{obras.length !== 1 ? "s" : ""} cadastrada{obras.length !== 1 ? "s" : ""}</p>
         </div>
-        <Link to="/app/obras/nova"><Button><Plus className="h-4 w-4 mr-2"/>Nova obra</Button></Link>
+        <Button onClick={() => nav("/app/obras/nova")} className="shrink-0">
+          <Plus className="h-4 w-4 mr-2" />Nova obra
+        </Button>
       </div>
 
-      {loading ? <p className="text-muted-foreground">Carregando...</p> :
-       obras.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-3"/>
-          <h3 className="font-bold text-lg mb-1">Nenhuma obra ainda</h3>
-          <p className="text-muted-foreground mb-4">Cadastre sua primeira obra para começar</p>
-          <Link to="/app/obras/nova"><Button><Plus className="h-4 w-4 mr-2"/>Criar primeira obra</Button></Link>
-        </Card>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {obras.map(o => (
-            <Link key={o.id} to={`/app/obras/${o.id}`}>
-              <Card className="p-4 hover:shadow-lg transition cursor-pointer h-full">
-                <div className="flex items-start justify-between mb-2 gap-2">
-                  <h3 className="font-bold text-lg">{o.nome}</h3>
-                  <div className="flex flex-col gap-1 items-end">
-                    <Badge variant="outline">{o.status}</Badge>
-                    {estaAtrasada(o) && (
-                      <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3"/>Atrasada</Badge>
-                    )}
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">{o.endereco || "Sem endereço"}</p>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs"><span>Progresso</span><span className="font-bold">{o.percentual}%</span></div>
-                  <Progress value={o.percentual} className="h-2"/>
-                </div>
-                <p className="text-xs text-muted-foreground mt-3">Etapa: <span className="font-medium text-foreground">{o.etapa_atual}</span></p>
-              </Card>
-            </Link>
-          ))}
+      {/* Filtros */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome ou endereço..."
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+          <SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os status</SelectItem>
+            <SelectItem value="planejamento">Planejamento</SelectItem>
+            <SelectItem value="em_andamento">Em andamento</SelectItem>
+            <SelectItem value="pausada">Pausada</SelectItem>
+            <SelectItem value="concluida">Concluída</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Tipo" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os tipos</SelectItem>
+            <SelectItem value="casa">Casa</SelectItem>
+            <SelectItem value="predio">Prédio</SelectItem>
+            <SelectItem value="reforma">Reforma</SelectItem>
+            <SelectItem value="comercial">Comercial</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={ordenacao} onValueChange={setOrdenacao}>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Ordenar" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recente">Mais recente</SelectItem>
+            <SelectItem value="nome">Nome A-Z</SelectItem>
+            <SelectItem value="progresso">% Progresso</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Onboarding vazio */}
+      {obras.length === 0 && (
+        <div className="text-center py-20 border-2 border-dashed border-border rounded-2xl">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Building2 className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-bold mb-2">Bem-vindo ao ObraVisual! 👋</h2>
+          <p className="text-muted-foreground mb-6 max-w-sm mx-auto">Cadastre sua primeira obra em 1 minuto e comece a acompanhar o progresso em tempo real.</p>
+          <div className="flex items-center justify-center gap-6 text-sm mb-8">
+            {["✅ Criar conta", "⬜ Cadastrar obra", "⬜ Convidar equipe", "⬜ Adicionar fotos"].map((item, i) => (
+              <span key={i} className={i === 0 ? "text-green-600 font-medium" : "text-muted-foreground"}>{item}</span>
+            ))}
+          </div>
+          <Button size="lg" onClick={() => nav("/app/obras/nova")}>
+            <Plus className="h-5 w-5 mr-2" />Cadastrar primeira obra
+          </Button>
         </div>
       )}
+
+      {/* Nenhum resultado na busca */}
+      {obras.length > 0 && obrasFiltradas.length === 0 && (
+        <div className="text-center py-16">
+          <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-1">Nenhuma obra encontrada</h3>
+          <p className="text-muted-foreground text-sm">Tente ajustar os filtros ou a busca.</p>
+        </div>
+      )}
+
+      {/* Grid de obras */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {obrasFiltradas.map((obra, i) => (
+          <motion.div
+            key={obra.id}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.06 }}
+            onClick={() => nav(`/app/obras/${obra.id}`)}
+            className="bg-card border border-border rounded-2xl overflow-hidden cursor-pointer hover:border-primary/40 hover:shadow-lg transition-all duration-200 group"
+          >
+            {/* Mini casa */}
+            <div className="bg-muted/40 px-6 pt-4 pb-2">
+              <AnimatedHouse stage={obra.etapa_atual ?? "terreno"} className="max-w-[160px] mx-auto" />
+            </div>
+
+            <div className="p-4">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className="font-bold text-foreground leading-tight group-hover:text-primary transition-colors">{obra.nome}</h3>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_COLOR[obra.status] ?? ""}`}>
+                  {STATUS_LABEL[obra.status] ?? obra.status}
+                </span>
+              </div>
+
+              {obra.endereco && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-3">
+                  <MapPin className="h-3 w-3 shrink-0" />{obra.endereco}
+                </p>
+              )}
+
+              {/* Barra de progresso */}
+              <div className="mb-3">
+                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                  <span>Progresso</span>
+                  <span className="font-semibold text-primary">{obra.percentual}%</span>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-500"
+                    style={{ width: `${obra.percentual}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3" />{obra.etapa_atual ?? "terreno"}
+                </span>
+                {obra.data_fim_prevista && (
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {new Date(obra.data_fim_prevista).toLocaleDateString("pt-BR")}
+                  </span>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
