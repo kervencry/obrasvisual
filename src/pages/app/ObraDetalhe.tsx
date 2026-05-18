@@ -443,6 +443,7 @@ function AprovacoesTab({ obraId, aprov, userId, onChange }: any) {
     if (!assinatura) return toast.error("Digite seu nome como assinatura");
     const { error } = await supabase.from("aprovacoes").insert({ obra_id: obraId, user_id: userId, etapa, assinatura, comentario });
     if (error) return toast.error(error.message);
+    await notificarMembros(obraId, userId, "Nova aprovação digital", `Etapa ${etapa} aprovada por ${assinatura}`, "sucesso", `/app/obras/${obraId}`);
     setAssinatura(""); setComentario(""); onChange(); toast.success("Etapa aprovada digitalmente!");
   }
   return (
