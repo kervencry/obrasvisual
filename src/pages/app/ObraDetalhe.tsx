@@ -383,12 +383,29 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {fotos.map((f: any, i: number) => (
-          <div key={f.id} onClick={() => setLightbox(i)}
-            className="cursor-pointer rounded-xl overflow-hidden border border-border hover:border-primary/40 hover:shadow-md transition-all group">
-            <div className="aspect-video overflow-hidden bg-muted">
+          <div key={f.id} className="rounded-xl overflow-hidden border border-border hover:border-primary/40 hover:shadow-md transition-all group relative">
+            <div className="aspect-video overflow-hidden bg-muted cursor-pointer" onClick={() => setLightbox(i)}>
               <img src={f.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 alt={f.legenda || ""} />
             </div>
+            <button
+              onClick={async () => {
+                if (!confirm("Excluir esta foto?")) return;
+                await supabase.from("fotos").delete().eq("id", f.id);
+                toast.success("Foto excluída!");
+                onUpload();
+              }}
+              className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-red-600 rounded-full items-center justify-center text-white hidden group-hover:flex transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+            <div className="p-2">
+              <p className="text-xs text-muted-foreground capitalize">{f.etapa}</p>
+              {f.legenda && <p className="text-xs text-foreground truncate">{f.legenda}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
             <div className="p-2">
               <p className="text-xs text-muted-foreground capitalize">{f.etapa}</p>
               {f.legenda && <p className="text-xs text-foreground truncate">{f.legenda}</p>}
