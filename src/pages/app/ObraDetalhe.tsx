@@ -406,14 +406,7 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
           </div>
         ))}
       </div>
-            <div className="p-2">
-              <p className="text-xs text-muted-foreground capitalize">{f.etapa}</p>
-              {f.legenda && <p className="text-xs text-foreground truncate">{f.legenda}</p>}
-            </div>
-          </div>
-        ))}
-      </div>
-
+            
       {/* LIGHTBOX */}
       <Dialog open={lightbox !== null} onOpenChange={() => setLightbox(null)}>
         <DialogContent className="max-w-4xl p-0 bg-black/95 border-0">
