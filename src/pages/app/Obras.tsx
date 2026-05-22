@@ -3,24 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Building2, MapPin, Calendar, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedHouse from "@/components/obra/AnimatedHouse";
 
 const STATUS_LABEL: Record<string, string> = {
-  planejamento: "Planejamento",
-  em_andamento: "Em andamento",
-  pausada: "Pausada",
-  concluida: "Concluída",
-  cancelada: "Cancelada",
+  planejamento: "Planejamento", em_andamento: "Em andamento",
+  pausada: "Pausada", concluida: "Concluída", cancelada: "Cancelada",
 };
-
 const STATUS_COLOR: Record<string, string> = {
   planejamento: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   em_andamento: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-  pausada: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+  pausada: "bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-400",
   concluida: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   cancelada: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 };
@@ -36,24 +31,21 @@ export default function Obras() {
 
   useEffect(() => {
     async function load() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) { nav("/auth"); return; }
-      const userId = sessionData.session.user.id;
-      const { data } = await supabase
-        .from("obras")
-        .select("*")
-        .or(`owner_id.eq.${userId}`)
-        .order("created_at", { ascending: false });
+      const { data: s } = await supabase.auth.getSession();
+      if (!s.session) { nav("/auth"); return; }
+      const userId = s.session.user.id;
+      const { data } = await supabase.from("obras").select("*")
+        .eq("owner_id", userId).order("created_at", { ascending: false });
       setObras(data ?? []);
       setLoading(false);
     }
     load();
   }, []);
 
-  const obrasFiltradas = obras
+  const filtradas = obras
     .filter(o => {
-      const matchBusca = o.nome.toLowerCase().includes(busca.toLowerCase()) ||
-        (o.endereco ?? "").toLowerCase().includes(busca.toLowerCase());
+      const q = busca.toLowerCase();
+      const matchBusca = o.nome.toLowerCase().includes(q) || (o.endereco ?? "").toLowerCase().includes(q);
       const matchStatus = filtroStatus === "todos" || o.status === filtroStatus;
       const matchTipo = filtroTipo === "todos" || o.tipo === filtroTipo;
       return matchBusca && matchStatus && matchTipo;
@@ -87,12 +79,8 @@ export default function Obras() {
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome ou endereço..."
-            value={busca}
-            onChange={e => setBusca(e.target.value)}
-            className="pl-9"
-          />
+          <Input placeholder="Buscar por nome ou endereço..." value={busca}
+            onChange={e => setBusca(e.target.value)} className="pl-9" />
         </div>
         <Select value={filtroStatus} onValueChange={setFiltroStatus}>
           <SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -132,7 +120,7 @@ export default function Obras() {
           </div>
           <h2 className="text-xl font-bold mb-2">Bem-vindo ao ObraVisual! 👋</h2>
           <p className="text-muted-foreground mb-6 max-w-sm mx-auto">Cadastre sua primeira obra em 1 minuto e comece a acompanhar o progresso em tempo real.</p>
-          <div className="flex items-center justify-center gap-6 text-sm mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm mb-8">
             {["✅ Criar conta", "⬜ Cadastrar obra", "⬜ Convidar equipe", "⬜ Adicionar fotos"].map((item, i) => (
               <span key={i} className={i === 0 ? "text-green-600 font-medium" : "text-muted-foreground"}>{item}</span>
             ))}
@@ -143,8 +131,8 @@ export default function Obras() {
         </div>
       )}
 
-      {/* Nenhum resultado na busca */}
-      {obras.length > 0 && obrasFiltradas.length === 0 && (
+      {/* Sem resultados na busca */}
+      {obras.length > 0 && filtradas.length === 0 && (
         <div className="text-center py-16">
           <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-1">Nenhuma obra encontrada</h3>
@@ -152,22 +140,15 @@ export default function Obras() {
         </div>
       )}
 
-      {/* Grid de obras */}
+      {/* Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {obrasFiltradas.map((obra, i) => (
-          <motion.div
-            key={obra.id}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06 }}
-            onClick={() => nav(`/app/obras/${obra.id}`)}
-            className="bg-card border border-border rounded-2xl overflow-hidden cursor-pointer hover:border-primary/40 hover:shadow-lg transition-all duration-200 group"
-          >
-            {/* Mini casa */}
+        {filtradas.map((obra, i) => (
+          <motion.div key={obra.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.06 }} onClick={() => nav(`/app/obras/${obra.id}`)}
+            className="bg-card border border-border rounded-2xl overflow-hidden cursor-pointer hover:border-primary/40 hover:shadow-lg transition-all duration-200 group">
             <div className="bg-muted/40 px-6 pt-4 pb-2">
               <AnimatedHouse stage={obra.etapa_atual ?? "terreno"} className="max-w-[160px] mx-auto" />
             </div>
-
             <div className="p-4">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <h3 className="font-bold text-foreground leading-tight group-hover:text-primary transition-colors">{obra.nome}</h3>
@@ -175,29 +156,23 @@ export default function Obras() {
                   {STATUS_LABEL[obra.status] ?? obra.status}
                 </span>
               </div>
-
               {obra.endereco && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1 mb-3">
                   <MapPin className="h-3 w-3 shrink-0" />{obra.endereco}
                 </p>
               )}
-
-              {/* Barra de progresso */}
               <div className="mb-3">
                 <div className="flex justify-between text-xs text-muted-foreground mb-1">
                   <span>Progresso</span>
                   <span className="font-semibold text-primary">{obra.percentual}%</span>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${obra.percentual}%` }}
-                  />
+                  <div className="h-full bg-primary rounded-full transition-all duration-500"
+                    style={{ width: `${obra.percentual}%` }} />
                 </div>
               </div>
-
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1 capitalize">
                   <TrendingUp className="h-3 w-3" />{obra.etapa_atual ?? "terreno"}
                 </span>
                 {obra.data_fim_prevista && (
