@@ -163,37 +163,102 @@ export default function ObraDetalhe() {
           </div>
         </TabsContent>
 
-        {/* ETAPAS */}
-        <TabsContent value="etapas" className="mt-4 space-y-3">
-          {etapas.map(e => (
-            <Card key={e.id} className="p-4">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex-1 min-w-[200px]">
-                  <p className="font-semibold capitalize">{e.etapa}</p>
-                  <Progress value={e.percentual} className="mt-1 h-2" />
-                </div>
-                {isOwner ? (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Input type="number" min={0} max={100} className="w-20"
-                      defaultValue={e.percentual}
-                      onBlur={ev => updateEtapa(e, { percentual: Number(ev.target.value) })} />
-                    <Select defaultValue={e.status} onValueChange={v => updateEtapa(e, { status: v })}>
-                      <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="nao_iniciado">Não iniciado</SelectItem>
-                        <SelectItem value="em_andamento">Em andamento</SelectItem>
-                        <SelectItem value="concluido">Concluído</SelectItem>
-                        <SelectItem value="aprovado">Aprovado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button size="sm" variant="outline" onClick={() => setEtapaAtual(e.etapa)}>
-                      Tornar atual
-                    </Button>
+       {/* ETAPAS */}
+        <TabsContent value="etapas" className="mt-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {etapas.map((e, i) => {
+              const concluido = e.status === "concluido" || e.status === "aprovado";
+              return (
+                <button
+                  key={e.id}
+                  disabled={!isOwner}
+                  onClick={() => {
+                    if (!isOwner) return;
+                    const novoStatus = concluido ? "nao_iniciado" : "concluido";
+                    updateEtapa(e, { status: novoStatus, percentual: concluido ? 0 : e.percentual });
+                    if (!concluido) setEtapaAtual(e.etapa);
+                  }}
+                  className={`relative p-4 rounded-2xl border-2 text-left transition-all duration-200 ${
+                    concluido
+                      ? "border-primary bg-primary/10 shadow-md shadow-primary/10"
+                      : e.status === "em_andamento"
+                      ? "border-accent/50 bg-accent/5"
+                      : "border-border bg-card hover:border-primary/30"
+                  } ${isOwner ? "cursor-pointer hover:shadow-md" : "cursor-default"}`}
+                >
+                  {/* Número da etapa */}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mb-3 ${
+                    concluido ? "bg-primary text-primary-foreground" :
+                    e.status === "em_andamento" ? "bg-accent/20 text-accent" :
+                    "bg-muted text-muted-foreground"
+                  }`}>
+                    {concluido ? "✓" : i + 1}
                   </div>
-                ) : <Badge variant="outline">{e.status}</Badge>}
-              </div>
-            </Card>
-          ))}
+
+                  {/* Nome */}
+                  <p className={`font-semibold capitalize text-sm mb-1 ${
+                    concluido ? "text-primary" : "text-foreground"
+                  }`}>
+                    {e.etapa}
+                  </p>
+
+                  {/* Porcentagem */}
+                  <p className={`text-2xl font-extrabold ${
+                    concluido ? "text-primary" : "text-muted-foreground"
+                  }`}>
+                    {e.percentual}%
+                  </p>
+
+                  {/* Barra */}
+                  <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        concluido ? "bg-primary" :
+                        e.status === "em_andamento" ? "bg-accent" : "bg-muted-foreground/30"
+                      }`}
+                      style={{ width: `${e.percentual}%` }}
+                    />
+                  </div>
+
+                  {/* Status badge */}
+                  <div className={`mt-2 text-xs font-medium ${
+                    concluido ? "text-primary" :
+                    e.status === "em_andamento" ? "text-accent" :
+                    "text-muted-foreground"
+                  }`}>
+                    {concluido ? "✅ Concluído" :
+                     e.status === "em_andamento" ? "⚡ Em andamento" :
+                     "⬜ Não iniciado"}
+                  </div>
+
+                  {/* Hint para owner */}
+                  {isOwner && (
+                    <p className="text-[10px] text-muted-foreground mt-2 opacity-60">
+                      {concluido ? "Clique para desmarcar" : "Clique para marcar como concluído"}
+                    </p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Progresso geral */}
+          <div className="mt-4 p-4 bg-card border border-border rounded-2xl">
+            <div className="flex justify-between text-sm mb-2">
+              <span className="font-medium">Progresso geral da obra</span>
+              <span className="font-bold text-primary">{obra.percentual}%</span>
+            </div>
+            <div className="h-3 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-700"
+                style={{ width: `${obra.percentual}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground mt-2">
+              <span>{etapas.filter(e => e.status === "concluido" || e.status === "aprovado").length} de {etapas.length} etapas concluídas</span>
+              <span>{etapas.filter(e => e.status === "em_andamento").length > 0 ? "Em andamento" : "Aguardando"}</span>
+            </div>
+          </div>
         </TabsContent>
 
         {/* FOTOS */}
