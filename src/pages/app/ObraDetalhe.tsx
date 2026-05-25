@@ -24,7 +24,7 @@ import {
   ArrowLeft, Upload, Send, CheckCircle2, FileText, DollarSign,
   BookOpen, MessageSquare, Clock, QrCode, Box, ImageIcon,
   ListChecks, Users, Copy, Download, Share2, Settings,
-  ChevronLeft, ChevronRight, X, Trash2
+  ChevronLeft, ChevronRight, X, Trash2, Key
 } from "lucide-react";
 import jsPDF from "jspdf";
 import MembrosObra from "@/components/obra/MembrosObra";
