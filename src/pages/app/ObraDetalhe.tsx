@@ -637,8 +637,11 @@ function Vista3D({ stage }: { stage: ObraStage }) {
 // ===== QR =====
 function QrTab({ obra }: { obra: any }) {
   const url = `${window.location.origin}/obra-publica/${obra.id}?t=${obra.publico_token}`;
+  const linkCliente = `${window.location.origin}/entrar`;
   const canvasRef = useRef<HTMLDivElement>(null);
+
   function copiar() { navigator.clipboard.writeText(url); toast.success("Link copiado!"); }
+  function copiarToken() { navigator.clipboard.writeText(obra.publico_token); toast.success("Token copiado!"); }
   function baixar() {
     const canvas = canvasRef.current?.querySelector("canvas") as HTMLCanvasElement | null;
     if (!canvas) return;
@@ -648,36 +651,86 @@ function QrTab({ obra }: { obra: any }) {
     link.click();
   }
   function whatsapp() {
-    const txt = encodeURIComponent(`Acompanhe a obra ${obra.nome} em tempo real: ${url}`);
+    const txt = encodeURIComponent(
+      `Olá! Aqui está o acesso para acompanhar sua obra "${obra.nome}" em tempo real.\n\n` +
+      `1️⃣ Acesse: ${linkCliente}\n` +
+      `2️⃣ Cole este token: ${obra.publico_token}\n\n` +
+      `Ou acesse direto pelo link: ${url}`
+    );
     window.open(`https://wa.me/?text=${txt}`, "_blank");
   }
+
   return (
-    <div className="grid md:grid-cols-2 gap-4">
-      <Card className="p-6 text-center">
-        <h3 className="font-bold mb-2">Portal do cliente</h3>
-        <p className="text-sm text-muted-foreground mb-4">Compartilhe este QR Code ou link com seu cliente</p>
-        <div ref={canvasRef} className="inline-block p-4 bg-white rounded-lg border">
-          <QRCodeCanvas value={url} size={220} />
+    <div className="space-y-4">
+      {/* TOKEN em destaque */}
+      <div className="bg-primary/5 border-2 border-primary/20 rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+            <Key className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-bold text-foreground">Token de acesso do cliente</h3>
+            <p className="text-xs text-muted-foreground">Envie este token para seu cliente acessar a obra</p>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-3">Imprima este QR Code e cole na placa de obra</p>
-        <div className="flex flex-wrap gap-2 justify-center mt-4">
-          <Button size="sm" variant="outline" onClick={copiar}><Copy className="h-4 w-4 mr-1" />Copiar link</Button>
-          <Button size="sm" variant="outline" onClick={baixar}><Download className="h-4 w-4 mr-1" />Baixar QR</Button>
-          <Button size="sm" onClick={whatsapp}><Share2 className="h-4 w-4 mr-1" />WhatsApp</Button>
+        <div className="flex items-center gap-3 bg-background border border-border rounded-xl p-3">
+          <code className="flex-1 text-xl font-mono font-bold text-primary tracking-widest text-center">
+            {obra.publico_token}
+          </code>
+          <Button size="sm" onClick={copiarToken}>
+            <Copy className="h-4 w-4 mr-1" />Copiar
+          </Button>
         </div>
-        <Input readOnly value={url} className="mt-4 text-xs" />
-      </Card>
-      <Card className="p-4">
-        <h3 className="font-semibold mb-2">Pré-visualização do cliente</h3>
-        <p className="text-xs text-muted-foreground mb-3">É assim que o cliente verá a obra ao acessar o link</p>
-        <div className="rounded-lg border border-border overflow-hidden bg-muted/30 h-[420px]">
-          <iframe title="Preview" src={url} className="w-full h-full" />
-        </div>
-      </Card>
+        <p className="text-xs text-muted-foreground mt-3 text-center">
+          O cliente acessa <strong>{window.location.origin}/entrar</strong> e cola este token
+        </p>
+      </div>
+
+      {/* Instruções */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { texto: "Copie o token acima", icon: "📋" },
+          { texto: "Envie para o cliente via WhatsApp", icon: "📱" },
+          { texto: "Cliente acessa /entrar e cola o token", icon: "🏗️" },
+        ].map((s, i) => (
+          <div key={i} className="bg-card border border-border rounded-xl p-3 text-center">
+            <div className="text-2xl mb-1">{s.icon}</div>
+            <p className="text-xs text-muted-foreground">{s.texto}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <Card className="p-6 text-center">
+          <h3 className="font-bold mb-2">QR Code da obra</h3>
+          <p className="text-sm text-muted-foreground mb-4">Imprima e cole na placa de obra</p>
+          <div ref={canvasRef} className="inline-block p-4 bg-white rounded-lg border">
+            <QRCodeCanvas value={url} size={180} />
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center mt-4">
+            <Button size="sm" variant="outline" onClick={copiar}>
+              <Copy className="h-4 w-4 mr-1" />Copiar link
+            </Button>
+            <Button size="sm" variant="outline" onClick={baixar}>
+              <Download className="h-4 w-4 mr-1" />Baixar QR
+            </Button>
+            <Button size="sm" onClick={whatsapp}>
+              <Share2 className="h-4 w-4 mr-1" />WhatsApp
+            </Button>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <h3 className="font-semibold mb-2">Pré-visualização do cliente</h3>
+          <p className="text-xs text-muted-foreground mb-3">É assim que o cliente verá a obra</p>
+          <div className="rounded-lg border border-border overflow-hidden bg-muted/30 h-[320px]">
+            <iframe title="Preview" src={url} className="w-full h-full" />
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }
-
 // ===== CONFIGURAÇÕES =====
 function ConfigTab({ obra, onUpdate }: { obra: any; onUpdate: () => void }) {
   const nav = useNavigate ? null : null;
