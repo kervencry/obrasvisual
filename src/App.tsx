@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import ObraDashboard from "./pages/obra/Dashboard";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import EntrarComToken from "./pages/EntrarComToken";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
 import AppShell from "./components/app/AppShell";
@@ -34,6 +35,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/entrar" element={<EntrarComToken />} />
               <Route path="/demo" element={<ObraDashboard />} />
               <Route path="/obra/:id" element={<ObraDashboard />} />
               <Route path="/obra-publica/:id" element={<ObraPublica />} />
