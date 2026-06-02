@@ -30,6 +30,7 @@ import {
 import jsPDF from "jspdf";
 import MembrosObra from "@/components/obra/MembrosObra";
 import { notificar, notificarMembros } from "@/lib/notificar";
+import PlanGate from "@/components/obra/PlanGate";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -294,9 +295,11 @@ export default function ObraDetalhe() {
 
         {/* FINANCEIRO */}
         <TabsContent value="financeiro" className="mt-4">
-          <FinanceiroTab obraId={obra.id} fin={fin} orcamento={orcamento}
-            gastos={gastos} valorPrev={obra.valor_previsto}
-            userId={user?.id} isOwner={isOwner} onChange={refresh} />
+          <PlanGate feature="financeiro" titulo="Controle financeiro">
+            <FinanceiroTab obraId={obra.id} fin={fin} orcamento={orcamento}
+              gastos={gastos} valorPrev={obra.valor_previsto}
+              userId={user?.id} isOwner={isOwner} onChange={refresh} />
+          </PlanGate>
         </TabsContent>
 
         {/* DIÁRIO */}
@@ -332,12 +335,16 @@ export default function ObraDetalhe() {
 
         {/* VISTA 3D */}
         <TabsContent value="vista3d" className="mt-4">
-          <Vista3DCasa stage={stage} />
+          <PlanGate feature="vista3d" titulo="Vista 3D isométrica">
+            <Vista3DCasa stage={stage} />
+          </PlanGate>
         </TabsContent>
 
         {/* APROVAÇÕES */}
         <TabsContent value="aprov" className="mt-4">
-          <AprovacoesTab obraId={obra.id} aprov={aprov} userId={user?.id} onChange={refresh} />
+          <PlanGate feature="aprovacaoDigital" titulo="Aprovação digital">
+            <AprovacoesTab obraId={obra.id} aprov={aprov} userId={user?.id} onChange={refresh} />
+          </PlanGate>
         </TabsContent>
 
         {/* ANTES/DEPOIS */}
@@ -357,16 +364,18 @@ export default function ObraDetalhe() {
 
         {/* RELATÓRIO */}
         <TabsContent value="relatorio" className="mt-4">
-          <Card className="p-6 text-center">
-            <FileText className="h-12 w-12 mx-auto text-primary mb-3" />
-            <h3 className="font-bold mb-2">Relatório PDF da obra</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Gere um PDF com resumo, etapas, financeiro e fotos
-            </p>
-            <Button onClick={() => gerarPDF(obra, etapas, fin, fotos)}>
-              Baixar PDF
-            </Button>
-          </Card>
+          <PlanGate feature="relatorioPDF" titulo="Relatórios em PDF">
+            <Card className="p-6 text-center">
+              <FileText className="h-12 w-12 mx-auto text-primary mb-3" />
+              <h3 className="font-bold mb-2">Relatório PDF da obra</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Gere um PDF com resumo, etapas, financeiro e fotos
+              </p>
+              <Button onClick={() => gerarPDF(obra, etapas, fin, fotos)}>
+                Baixar PDF
+              </Button>
+            </Card>
+          </PlanGate>
         </TabsContent>
 
         {/* CONFIGURAÇÕES */}
