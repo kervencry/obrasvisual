@@ -15,7 +15,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import AnimatedHouse, { STAGES, type ObraStage } from "@/components/obra/AnimatedHouse";
-import BeforeAfter from "@/components/obra/BeforeAfter";
+import BeforeAfterPorEtapa from "@/components/obra/BeforeAfterPorEtapa";
+import Vista3DCasa from "@/components/obra/Vista3DCasa";
 import ClimaWidget from "@/components/obra/ClimaWidget";
 import { QRCodeCanvas } from "qrcode.react";
 import { formatDistanceToNow, format } from "date-fns";
@@ -331,7 +332,7 @@ export default function ObraDetalhe() {
 
         {/* VISTA 3D */}
         <TabsContent value="vista3d" className="mt-4">
-          <Vista3D stage={stage} />
+          <Vista3DCasa stage={stage} />
         </TabsContent>
 
         {/* APROVAÇÕES */}
@@ -341,9 +342,7 @@ export default function ObraDetalhe() {
 
         {/* ANTES/DEPOIS */}
         <TabsContent value="antes" className="mt-4">
-          {fotos.length < 2
-            ? <p className="text-muted-foreground">Faça upload de pelo menos 2 fotos para comparar.</p>
-            : <BeforeAfter before={fotos[fotos.length - 1].url} after={fotos[0].url} />}
+          <BeforeAfterPorEtapa fotos={fotos} />
         </TabsContent>
 
         {/* QR */}
