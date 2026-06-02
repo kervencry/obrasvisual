@@ -103,7 +103,7 @@ export default function ObraPublica() {
   async function aprovar() {
     if (!assinatura.trim()) { toast.error("Digite seu nome para assinar"); return; }
     const { error } = await supabase.from("aprovacoes").insert({
-      obra_id: id, user_id: obra.owner_id, etapa: etapaAprov,
+      obra_id: id, user_id: obra.owner_id, etapa: etapaAprov as any,
       assinatura, comentario, aprovado: true
     });
     if (error) return toast.error(error.message);
