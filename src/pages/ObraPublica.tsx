@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import AnimatedHouse, { STAGES, type ObraStage } from "@/components/obra/AnimatedHouse";
 import ClimaWidget from "@/components/obra/ClimaWidget";
-import BeforeAfter from "@/components/obra/BeforeAfter";
+import BeforeAfterPorEtapa from "@/components/obra/BeforeAfterPorEtapa";
+import Vista3DCasa from "@/components/obra/Vista3DCasa";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -103,7 +104,7 @@ export default function ObraPublica() {
   async function aprovar() {
     if (!assinatura.trim()) { toast.error("Digite seu nome para assinar"); return; }
     const { error } = await supabase.from("aprovacoes").insert({
-      obra_id: id, user_id: obra.owner_id, etapa: etapaAprov,
+      obra_id: id, user_id: obra.owner_id, etapa: etapaAprov as any,
       assinatura, comentario, aprovado: true
     });
     if (error) return toast.error(error.message);
@@ -457,14 +458,7 @@ export default function ObraPublica() {
 
           {/* ANTES/DEPOIS */}
           <TabsContent value="antes">
-            {fotos.length < 2 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <ImageIcon className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p>São necessárias pelo menos 2 fotos para comparar.</p>
-              </div>
-            ) : (
-              <BeforeAfter before={fotos[fotos.length - 1].url} after={fotos[0].url} />
-            )}
+            <BeforeAfterPorEtapa fotos={fotos} />
           </TabsContent>
 
           {/* RELATÓRIO */}

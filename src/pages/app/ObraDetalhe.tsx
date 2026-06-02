@@ -15,7 +15,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import AnimatedHouse, { STAGES, type ObraStage } from "@/components/obra/AnimatedHouse";
-import BeforeAfter from "@/components/obra/BeforeAfter";
+import BeforeAfterPorEtapa from "@/components/obra/BeforeAfterPorEtapa";
+import Vista3DCasa from "@/components/obra/Vista3DCasa";
 import ClimaWidget from "@/components/obra/ClimaWidget";
 import { QRCodeCanvas } from "qrcode.react";
 import { formatDistanceToNow, format } from "date-fns";
@@ -29,6 +30,7 @@ import {
 import jsPDF from "jspdf";
 import MembrosObra from "@/components/obra/MembrosObra";
 import { notificar, notificarMembros } from "@/lib/notificar";
+import PlanGate from "@/components/obra/PlanGate";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -293,9 +295,11 @@ export default function ObraDetalhe() {
 
         {/* FINANCEIRO */}
         <TabsContent value="financeiro" className="mt-4">
-          <FinanceiroTab obraId={obra.id} fin={fin} orcamento={orcamento}
-            gastos={gastos} valorPrev={obra.valor_previsto}
-            userId={user?.id} isOwner={isOwner} onChange={refresh} />
+          <PlanGate feature="financeiro" titulo="Controle financeiro">
+            <FinanceiroTab obraId={obra.id} fin={fin} orcamento={orcamento}
+              gastos={gastos} valorPrev={obra.valor_previsto}
+              userId={user?.id} isOwner={isOwner} onChange={refresh} />
+          </PlanGate>
         </TabsContent>
 
         {/* DIÁRIO */}
@@ -331,19 +335,21 @@ export default function ObraDetalhe() {
 
         {/* VISTA 3D */}
         <TabsContent value="vista3d" className="mt-4">
-          <Vista3D stage={stage} />
+          <PlanGate feature="vista3d" titulo="Vista 3D isométrica">
+            <Vista3DCasa stage={stage} />
+          </PlanGate>
         </TabsContent>
 
         {/* APROVAÇÕES */}
         <TabsContent value="aprov" className="mt-4">
-          <AprovacoesTab obraId={obra.id} aprov={aprov} userId={user?.id} onChange={refresh} />
+          <PlanGate feature="aprovacaoDigital" titulo="Aprovação digital">
+            <AprovacoesTab obraId={obra.id} aprov={aprov} userId={user?.id} onChange={refresh} />
+          </PlanGate>
         </TabsContent>
 
         {/* ANTES/DEPOIS */}
         <TabsContent value="antes" className="mt-4">
-          {fotos.length < 2
-            ? <p className="text-muted-foreground">Faça upload de pelo menos 2 fotos para comparar.</p>
-            : <BeforeAfter before={fotos[fotos.length - 1].url} after={fotos[0].url} />}
+          <BeforeAfterPorEtapa fotos={fotos} />
         </TabsContent>
 
         {/* QR */}
@@ -358,16 +364,18 @@ export default function ObraDetalhe() {
 
         {/* RELATÓRIO */}
         <TabsContent value="relatorio" className="mt-4">
-          <Card className="p-6 text-center">
-            <FileText className="h-12 w-12 mx-auto text-primary mb-3" />
-            <h3 className="font-bold mb-2">Relatório PDF da obra</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Gere um PDF com resumo, etapas, financeiro e fotos
-            </p>
-            <Button onClick={() => gerarPDF(obra, etapas, fin, fotos)}>
-              Baixar PDF
-            </Button>
-          </Card>
+          <PlanGate feature="relatorioPDF" titulo="Relatórios em PDF">
+            <Card className="p-6 text-center">
+              <FileText className="h-12 w-12 mx-auto text-primary mb-3" />
+              <h3 className="font-bold mb-2">Relatório PDF da obra</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Gere um PDF com resumo, etapas, financeiro e fotos
+              </p>
+              <Button onClick={() => gerarPDF(obra, etapas, fin, fotos)}>
+                Baixar PDF
+              </Button>
+            </Card>
+          </PlanGate>
         </TabsContent>
 
         {/* CONFIGURAÇÕES */}
@@ -519,15 +527,29 @@ function ChatTab({ obraId, msgs, userId }: any) {
   }
   return (
     <Card className="flex flex-col h-[500px]">
+      <div className="px-4 py-2 border-b border-border bg-muted/30">
+        <p className="text-xs text-muted-foreground">
+          Chat interno da obra — visível para você, equipe e cliente (via portal/token)
+        </p>
+      </div>
       <div className="flex-1 overflow-auto p-4 space-y-2">
-        {msgs.map((m: any) => (
-          <div key={m.id} className={`flex ${m.user_id === userId ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${m.user_id === userId ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-              <p>{m.conteudo}</p>
-              <p className="text-[10px] opacity-60 mt-0.5">{format(new Date(m.created_at), "HH:mm")}</p>
+        {msgs.map((m: any) => {
+          const isCliente = m.conteudo?.startsWith("[Cliente]");
+          const mine = m.user_id === userId && !isCliente;
+          return (
+            <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${
+                mine ? "bg-primary text-primary-foreground"
+                     : isCliente ? "bg-accent/20 border border-accent/40"
+                     : "bg-muted"
+              }`}>
+                {isCliente && <p className="text-[10px] font-bold text-accent mb-0.5">CLIENTE</p>}
+                <p>{m.conteudo?.replace("[Cliente] ", "")}</p>
+                <p className="text-[10px] opacity-60 mt-0.5">{format(new Date(m.created_at), "HH:mm")}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {msgs.length === 0 && <p className="text-center text-muted-foreground text-sm py-8">Nenhuma mensagem ainda</p>}
       </div>
       <div className="p-3 border-t border-border flex gap-2">
@@ -596,6 +618,8 @@ function FinanceiroTab({ obraId, fin, orcamento, gastos, valorPrev, userId, isOw
 // ===== DIÁRIO =====
 function DiarioTab({ obraId, diario, userId, onChange }: any) {
   const [form, setForm] = useState({ titulo: "", conteudo: "", clima: "", trabalhadores: "" });
+  const [busca, setBusca] = useState("");
+  const [filtroData, setFiltroData] = useState("");
   async function add() {
     if (!form.conteudo) return;
     const { error } = await supabase.from("diario_obra").insert({
@@ -607,6 +631,24 @@ function DiarioTab({ obraId, diario, userId, onChange }: any) {
     setForm({ titulo: "", conteudo: "", clima: "", trabalhadores: "" });
     onChange(); toast.success("Registro adicionado");
   }
+  async function excluir(id: string) {
+    if (!confirm("Excluir este registro?")) return;
+    await supabase.from("diario_obra").delete().eq("id", id);
+    onChange(); toast.success("Registro excluído");
+  }
+  const filtrados = diario.filter((d: any) => {
+    const matchBusca = !busca ||
+      d.conteudo?.toLowerCase().includes(busca.toLowerCase()) ||
+      d.titulo?.toLowerCase().includes(busca.toLowerCase());
+    const matchData = !filtroData || d.data === filtroData;
+    return matchBusca && matchData;
+  });
+  // agrupar por mês
+  const grupos: Record<string, any[]> = {};
+  filtrados.forEach((d: any) => {
+    const k = format(new Date(d.data), "MMMM yyyy", { locale: ptBR });
+    (grupos[k] = grupos[k] || []).push(d);
+  });
   return (
     <div className="space-y-4">
       <Card className="p-4 space-y-3">
@@ -619,20 +661,55 @@ function DiarioTab({ obraId, diario, userId, onChange }: any) {
         </div>
         <Button onClick={add}>Adicionar registro</Button>
       </Card>
-      <div className="space-y-2">
-        {diario.map((d: any) => (
-          <Card key={d.id} className="p-4">
-            <div className="flex justify-between mb-1">
-              <p className="font-semibold">{d.titulo || "Sem título"}</p>
-              <span className="text-xs text-muted-foreground">{format(new Date(d.data), "dd/MM/yyyy")}</span>
+
+      {diario.length > 0 && (
+        <Card className="p-3 flex flex-wrap gap-2 items-center">
+          <Input placeholder="🔍 Buscar no diário..." value={busca} onChange={e => setBusca(e.target.value)} className="flex-1 min-w-[200px]" />
+          <Input type="date" value={filtroData} onChange={e => setFiltroData(e.target.value)} className="w-44" />
+          {(busca || filtroData) && (
+            <Button variant="ghost" size="sm" onClick={() => { setBusca(""); setFiltroData(""); }}>Limpar</Button>
+          )}
+          <span className="text-xs text-muted-foreground ml-auto">
+            {filtrados.length} de {diario.length} registros
+          </span>
+        </Card>
+      )}
+
+      {filtrados.length === 0 && diario.length > 0 && (
+        <p className="text-center text-muted-foreground text-sm py-6">Nenhum registro encontrado com esses filtros.</p>
+      )}
+      {diario.length === 0 && (
+        <p className="text-center text-muted-foreground text-sm py-6">Comece adicionando o primeiro registro do diário.</p>
+      )}
+
+      <div className="space-y-4">
+        {Object.entries(grupos).map(([mes, items]) => (
+          <div key={mes}>
+            <h5 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 capitalize sticky top-0 bg-background py-1">
+              📅 {mes} <span className="font-normal">· {items.length} registro{items.length > 1 ? "s" : ""}</span>
+            </h5>
+            <div className="space-y-2">
+              {items.map((d: any) => (
+                <Card key={d.id} className="p-4 group">
+                  <div className="flex justify-between mb-1">
+                    <p className="font-semibold">{d.titulo || "Sem título"}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{format(new Date(d.data), "dd/MM/yyyy")}</span>
+                      <button onClick={() => excluir(d.id)} className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive/80 transition">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap">{d.conteudo}</p>
+                  {(d.clima || d.trabalhadores) && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {d.clima && `☀️ ${d.clima}`} {d.trabalhadores && `· 👷 ${d.trabalhadores} trabalhadores`}
+                    </p>
+                  )}
+                </Card>
+              ))}
             </div>
-            <p className="text-sm whitespace-pre-wrap">{d.conteudo}</p>
-            {(d.clima || d.trabalhadores) && (
-              <p className="text-xs text-muted-foreground mt-2">
-                {d.clima && `☀️ ${d.clima}`} {d.trabalhadores && `· 👷 ${d.trabalhadores}`}
-              </p>
-            )}
-          </Card>
+          </div>
         ))}
       </div>
     </div>

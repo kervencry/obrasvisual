@@ -22,19 +22,20 @@ export function useNotificacoes() {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     const ch = supabase
-      .channel(`notif-${user.id}`)
-      .on(
+      .channel(`notif-${user.id}-${Math.random().toString(36).slice(2)}`);
+    ch.on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notificacoes", filter: `user_id=eq.${user.id}` },
         (payload: any) => {
+          if (cancelled) return;
           const n = payload.new;
           setNotificacoes(prev => [n, ...prev]);
           toast(n.titulo, { description: n.mensagem });
         },
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+      ).subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
   }, [user]);
 
   const naoLidas = notificacoes.filter(n => !n.lida).length;

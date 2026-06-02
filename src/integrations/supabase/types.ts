@@ -253,6 +253,7 @@ export type Database = {
           etapa: Database["public"]["Enums"]["etapa_id"] | null
           id: string
           obra_id: string
+          para_cliente: boolean
           user_id: string
         }
         Insert: {
@@ -261,6 +262,7 @@ export type Database = {
           etapa?: Database["public"]["Enums"]["etapa_id"] | null
           id?: string
           obra_id: string
+          para_cliente?: boolean
           user_id: string
         }
         Update: {
@@ -269,6 +271,7 @@ export type Database = {
           etapa?: Database["public"]["Enums"]["etapa_id"] | null
           id?: string
           obra_id?: string
+          para_cliente?: boolean
           user_id?: string
         }
         Relationships: [
@@ -428,6 +431,7 @@ export type Database = {
           empresa: string | null
           id: string
           nome: string | null
+          plano: string
           preferencias: Json
           telefone: string | null
           updated_at: string
@@ -439,6 +443,7 @@ export type Database = {
           empresa?: string | null
           id: string
           nome?: string | null
+          plano?: string
           preferencias?: Json
           telefone?: string | null
           updated_at?: string
@@ -450,6 +455,7 @@ export type Database = {
           empresa?: string | null
           id?: string
           nome?: string | null
+          plano?: string
           preferencias?: Json
           telefone?: string | null
           updated_at?: string
@@ -533,6 +539,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_obra_editor: {
+        Args: { _obra: string; _user: string }
         Returns: boolean
       }
       is_obra_member: {

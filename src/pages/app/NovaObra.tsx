@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,18 +8,41 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Crown } from "lucide-react";
+import { PLANOS, getPlanoDoUsuario, contarObrasDoUsuario, type Plano } from "@/lib/planos";
 
 export default function NovaObra() {
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [plano, setPlano] = useState<Plano>("gratuito");
+  const [usadas, setUsadas] = useState(0);
+  const [bloqueado, setBloqueado] = useState(false);
   const [form, setForm] = useState({
     nome: "", endereco: "", tipo: "casa",
     valor_previsto: "", data_inicio: "", data_fim_prevista: "", descricao: ""
   });
 
+  useEffect(() => {
+    (async () => {
+      const { data: s } = await supabase.auth.getSession();
+      if (!s.session) return;
+      const [p, c] = await Promise.all([
+        getPlanoDoUsuario(s.session.user.id),
+        contarObrasDoUsuario(s.session.user.id),
+      ]);
+      setPlano(p); setUsadas(c);
+      const max = PLANOS[p].maxObras;
+      setBloqueado(max !== null && c >= max);
+    })();
+  }, []);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.nome.trim()) { toast.error("Nome da obra é obrigatório."); return; }
+    if (bloqueado) {
+      toast.error(`Limite do plano ${PLANOS[plano].nome} atingido. Faça upgrade.`);
+      return;
+    }
     setLoading(true);
 
     const { data: sessionData } = await supabase.auth.getSession();
@@ -63,10 +86,33 @@ export default function NovaObra() {
     nav(`/app/obras/${data.id}`);
   }
 
+  if (bloqueado) {
+    return (
+      <div className="p-6 md:p-8 max-w-xl mx-auto">
+        <Card className="p-8 text-center">
+          <Crown className="h-12 w-12 mx-auto text-primary mb-3" />
+          <h2 className="text-2xl font-bold mb-2">Limite do plano atingido</h2>
+          <p className="text-muted-foreground mb-5">
+            Seu plano <strong>{PLANOS[plano].nome}</strong> permite até <strong>{PLANOS[plano].maxObras}</strong> obras
+            e você já cadastrou <strong>{usadas}</strong>. Faça upgrade para criar mais obras.
+          </p>
+          <Link to="/app/planos"><Button size="lg">Ver planos</Button></Link>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 md:p-8 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-extrabold mb-1">Nova obra</h1>
-      <p className="text-muted-foreground mb-6">Cadastre uma nova obra para acompanhamento</p>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 className="text-3xl font-extrabold mb-1">Nova obra</h1>
+          <p className="text-muted-foreground">Cadastre uma nova obra para acompanhamento</p>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          Plano {PLANOS[plano].nome}: {usadas}/{PLANOS[plano].maxObras ?? "∞"} obras
+        </span>
+      </div>
       <Card className="p-6">
         <form onSubmit={submit} className="space-y-4">
           <div>
