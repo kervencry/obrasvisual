@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const plans = [
   {
@@ -121,13 +122,15 @@ const Pricing = () => {
                   </li>
                 ))}
               </ul>
-              <Button
-                variant={plan.popular ? "default" : "outline"}
-                className="w-full"
-                size="lg"
-              >
-                {plan.cta}
-              </Button>
+              <Link to="/auth" className="w-full">
+                <Button
+                  variant={plan.popular ? "default" : "outline"}
+                  className="w-full"
+                  size="lg"
+                >
+                  {plan.cta}
+                </Button>
+              </Link>
             </motion.div>
           ))}
         </div>
