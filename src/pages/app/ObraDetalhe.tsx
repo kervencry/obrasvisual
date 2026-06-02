@@ -527,15 +527,29 @@ function ChatTab({ obraId, msgs, userId }: any) {
   }
   return (
     <Card className="flex flex-col h-[500px]">
+      <div className="px-4 py-2 border-b border-border bg-muted/30">
+        <p className="text-xs text-muted-foreground">
+          Chat interno da obra — visível para você, equipe e cliente (via portal/token)
+        </p>
+      </div>
       <div className="flex-1 overflow-auto p-4 space-y-2">
-        {msgs.map((m: any) => (
-          <div key={m.id} className={`flex ${m.user_id === userId ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${m.user_id === userId ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-              <p>{m.conteudo}</p>
-              <p className="text-[10px] opacity-60 mt-0.5">{format(new Date(m.created_at), "HH:mm")}</p>
+        {msgs.map((m: any) => {
+          const isCliente = m.conteudo?.startsWith("[Cliente]");
+          const mine = m.user_id === userId && !isCliente;
+          return (
+            <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${
+                mine ? "bg-primary text-primary-foreground"
+                     : isCliente ? "bg-accent/20 border border-accent/40"
+                     : "bg-muted"
+              }`}>
+                {isCliente && <p className="text-[10px] font-bold text-accent mb-0.5">CLIENTE</p>}
+                <p>{m.conteudo?.replace("[Cliente] ", "")}</p>
+                <p className="text-[10px] opacity-60 mt-0.5">{format(new Date(m.created_at), "HH:mm")}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {msgs.length === 0 && <p className="text-center text-muted-foreground text-sm py-8">Nenhuma mensagem ainda</p>}
       </div>
       <div className="p-3 border-t border-border flex gap-2">
