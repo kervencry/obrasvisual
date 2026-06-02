@@ -17,6 +17,7 @@ import ObraDetalhe from "./pages/app/ObraDetalhe";
 import Perfil from "./pages/app/Perfil";
 import Notificacoes from "./pages/app/Notificacoes";
 import Portfolio from "./pages/app/Portfolio";
+import Planos from "./pages/app/Planos";
 import DashboardEngenheiro from "./pages/app/DashboardEngenheiro";
 import DashboardCliente from "./pages/app/DashboardCliente";
 import PortfolioPublico from "./pages/PortfolioPublico";
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/app/perfil" element={<AppShell><Perfil /></AppShell>} />
               <Route path="/app/notificacoes" element={<AppShell><Notificacoes /></AppShell>} />
               <Route path="/app/portfolio" element={<AppShell><Portfolio /></AppShell>} />
+              <Route path="/app/planos" element={<AppShell><Planos /></AppShell>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

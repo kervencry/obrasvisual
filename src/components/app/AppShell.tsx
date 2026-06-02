@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNotificacoes } from "@/hooks/useNotificacoes";
 import { ThemeToggle } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
-import { HardHat, LayoutDashboard, Plus, User, Bell, LogOut, Image, Building2 } from "lucide-react";
+import { HardHat, LayoutDashboard, Plus, User, Bell, LogOut, Image, Building2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AppShell({ children }: { children: ReactNode }) {
@@ -28,6 +28,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     { to: "/app", icon: Building2, label: "Obras" },
     { to: "/app/obras/nova", icon: Plus, label: "Nova obra" },
     { to: "/app/portfolio", icon: Image, label: "Portfólio" },
+    { to: "/app/planos", icon: Crown, label: "Planos" },
     { to: "/app/notificacoes", icon: Bell, label: "Notificações", badge: naoLidas },
     { to: "/app/perfil", icon: User, label: "Perfil" },
   ];
