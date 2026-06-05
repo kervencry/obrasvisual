@@ -20,7 +20,7 @@ export default function Auth() {
   const [nome, setNome] = useState("");
   const [role, setRole] = useState("cliente");
 
-  useEffect(() => { if (user) nav("/app"); }, [user, nav]);
+  useEffect(() => { if (user) nav("/app/home"); }, [user, nav]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -29,7 +29,7 @@ export default function Auth() {
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Bem-vindo de volta!");
-    nav("/app");
+    nav("/app/home");
   }
 
   async function handleSignup(e: React.FormEvent) {
@@ -38,7 +38,7 @@ export default function Auth() {
     const { error } = await supabase.auth.signUp({
       email, password,
       options: {
-        emailRedirectTo: `${window.location.origin}/app`,
+        emailRedirectTo: `${window.location.origin}/app/home`,
         data: { nome, role },
       },
     });
