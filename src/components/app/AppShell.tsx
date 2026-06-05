@@ -4,8 +4,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNotificacoes } from "@/hooks/useNotificacoes";
 import { ThemeToggle } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
-import { HardHat, LayoutDashboard, Plus, User, Bell, LogOut, Image, Building2, Crown } from "lucide-react";
+import {
+  HardHat, LayoutDashboard, Plus, User, Bell, LogOut, Image, Building2,
+  Crown, MessageSquare, FileText, ClipboardList, Users, Shield, Layers,
+  Camera, GalleryHorizontal,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ROLE_LABEL, type Role } from "@/lib/rbac";
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const { user, loading, role, signOut } = useAuth();
@@ -15,33 +20,25 @@ export default function AppShell({ children }: { children: ReactNode }) {
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando...</div>;
   if (!user) return <Navigate to="/auth" replace />;
 
-  const isPro = role === "engenheiro" || role === "arquiteto" || role === "mestre_obras";
-
-  const firstLink = isPro
-    ? { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", end: true }
-    : role === "cliente"
-    ? { to: "/app/cliente", icon: LayoutDashboard, label: "Minhas obras", end: true }
-    : { to: "/app", icon: LayoutDashboard, label: "Minhas obras", end: true };
-
-  const links = [
-    firstLink,
-    { to: "/app", icon: Building2, label: "Obras" },
-    { to: "/app/obras/nova", icon: Plus, label: "Nova obra" },
-    { to: "/app/portfolio", icon: Image, label: "Portfólio" },
-    { to: "/app/planos", icon: Crown, label: "Planos" },
-    { to: "/app/notificacoes", icon: Bell, label: "Notificações", badge: naoLidas },
-    { to: "/app/perfil", icon: User, label: "Perfil" },
-  ];
+  const links = buildLinks(role as Role | null, naoLidas);
+  const roleLabel = role ? ROLE_LABEL[role as Role] : "";
 
   return (
     <div className="min-h-screen flex bg-background">
       <aside className="w-60 border-r border-border bg-card hidden md:flex flex-col">
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <HardHat className="h-6 w-6 text-primary" />
-            <span className="font-extrabold text-lg">ObraVisual</span>
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <HardHat className="h-6 w-6 text-primary" />
+              <span className="font-extrabold text-lg">ObraVisual</span>
+            </div>
+            <ThemeToggle />
           </div>
-          <ThemeToggle />
+          {roleLabel && (
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+              {roleLabel}
+            </span>
+          )}
         </div>
         <nav className="flex-1 p-2 space-y-1">
           {links.map((l: any) => (
