@@ -1,79 +1,60 @@
-# ObraVisual — Implementação completa do mapa de funcionalidades
+# Refatoração: experiência por perfil (RBAC + UX dedicada)
 
-O mapa enviado contém **18 funcionalidades** divididas em 3 níveis. Vou implementar tudo em fases organizadas, com backend (Lovable Cloud), autenticação e UI completa.
+Objetivo: evoluir o ObraVisual mantendo todo o backend, integrações Supabase, sistema de token e componentes atuais — sem quebrar nada — e entregar uma experiência visual e funcional totalmente personalizada para cada role (cliente, engenheiro, arquiteto, mestre_obras, admin).
 
-## Fase 1 — Fundação (Auth + Banco de dados)
+## Escopo desta entrega (fase 1)
 
-- **Autenticação**: login/cadastro com e-mail e senha, seleção de perfil (Cliente, Engenheiro, Arquiteto, Mestre de Obras)
-- **Banco de dados**: tabelas `profiles`, `user_roles`, `obras`, `obra_members`, `etapas`, `fotos`, `mensagens`, `aprovacoes`, `diario_obra`, `financeiro`, `notificacoes`, `timeline_eventos`
-- **Storage**: buckets `fotos-obras`, `documentos`, `avatars`
-- **RLS** completo em todas as tabelas
+Como o pedido é muito grande, vou dividir em fases para evitar regressões. Esta fase entrega a base RBAC + menus + dashboards por perfil + contas de teste. As funcionalidades novas pesadas (Gantt, gestão de equipe/materiais, painel admin com faturamento, auditoria, etc.) entram nas fases seguintes referenciadas no final.
 
-## Fase 2 — Etapa 1 do mapa (já parcialmente feito)
+### 1. Camada RBAC unificada
+- Novo arquivo `src/lib/rbac.ts` com:
+  - tipo `Role` ("cliente" | "engenheiro" | "arquiteto" | "mestre_obras" | "admin")
+  - mapa `PERMISSIONS[role]` (criar_obra, editar_obra, excluir_obra, gerar_token, upload_foto, registrar_diario, aprovar_revisao, gerenciar_usuarios, ver_financeiro, etc.)
+  - helper `can(role, perm)`
+- Novo componente `src/components/auth/RoleRoute.tsx` — wrapper de rota: exige login, valida role permitida, redireciona para o dashboard correto do usuário se acessar URL alheia. Sem alterar `useAuth`.
+- Vínculo com obra continua via `is_obra_member` / `is_obra_editor` no Supabase (sem mudar RLS).
 
-- ✅ Casa animada (SVG) — já existe
-- ✅ Dashboard básico — já existe
-- **Fotos e registros**: upload por etapa com histórico real (Storage + DB)
-- **Cadastro de obra** completo (form com nome, endereço, tipo, valor, prazo)
-- **Listagem de obras** do usuário
+### 2. Roteamento por perfil
+Reaproveita o `AppShell` mas com menu dinâmico. Novas rotas (todas dentro do shell):
 
-## Fase 3 — Funcionalidades sugeridas (Etapa 2 do mapa)
-
-1. **Chat integrado** — mensagens por obra/etapa, com realtime
-2. **Aprovação digital** — cliente aprova etapa, registro com timestamp e assinatura
-3. **Relatório PDF** — geração automática com fotos e progresso (jsPDF)
-4. **Linha do tempo** — histórico auditável de eventos da obra
-5. **Controle financeiro** — gastos por etapa, orçamento, alertas de desvio, upload NF
-6. **Notificações** — sistema in-app com badge e lista
-7. **Cronograma Gantt** — etapas com prazo e status visual
-8. **Portal do cliente** — link público `/obra/:id/cliente` com token
-9. **Diário de obra** — log diário do engenheiro
-
-## Fase 4 — Diferenciais competitivos (Etapa 3 do mapa)
-
-10. **Slider antes/depois** — comparação de fotos com arrastar
-11. **Vista 3D básica** — modelo evolui com etapas (Three.js leve / CSS 3D)
-12. **QR Code da obra** — geração para acesso mobile (qrcode lib)
-
-## Fase 5 — Extras/futuro (Etapa 4 do mapa)
-
-13. **Orçamento interativo** — mudanças com aprovação digital
-14. **Galeria de portfólio** — página pública `/portfolio/:user` com obras concluídas
-15. **Clima e alertas** — integração com API de previsão do tempo
-
-## Páginas a criar
-
-```text
-/                          landing (existe)
-/auth                      login/cadastro
-/app                       dashboard geral (lista de obras)
-/app/obras/nova            cadastro de obra
-/app/obras/:id             detalhe da obra (tabs: visão geral, etapas, fotos, chat, timeline, financeiro, diário, gantt, 3D)
-/app/obras/:id/relatorio   PDF
-/app/perfil                perfil do usuário
-/app/notificacoes          central de notificações
-/app/portfolio             portfólio pessoal
-/obra/:id/publico?t=token  portal do cliente público (com QR)
-/portfolio/:userId         galeria pública
 ```
+/app                       redireciona para dashboard do role logado
+/app/cliente               Dashboard Cliente
+/app/cliente/obra/:id      Detalhe da obra (visão cliente)
+/app/engenheiro            Dashboard Engenheiro (renomeia o atual)
+/app/arquiteto             Dashboard Arquiteto (novo)
+/app/mestre                Dashboard Mestre de Obras (novo)
+/app/admin                 Dashboard Admin (novo)
+/app/admin/usuarios        Lista de usuários
+/app/admin/obras           Todas as obras
+```
+Rotas existentes (`/app/obras`, `/app/obras/nova`, `/app/obras/:id`, `/app/portfolio`, `/app/planos`, `/app/notificacoes`, `/app/perfil`) são mantidas mas envolvidas em `RoleRoute` com as permissões corretas.
 
-## Stack técnica adicional
+### 3. Menu lateral dinâmico
+Refatorar `AppShell.tsx` para montar `links[]` a partir do `role`, conforme a especificação do pedido (cliente / engenheiro / arquiteto / mestre / admin). Mantém logo, tema escuro e contador de notificações.
 
-- `jspdf` + `html2canvas` — relatórios PDF
-- `qrcode.react` — QR codes
-- `recharts` — gráficos (já instalado)
-- Lovable AI (opcional) — sumário automático de obra
-- API pública Open-Meteo (sem chave) — clima
+### 4. Dashboards por perfil
+- **Cliente** (`/app/cliente`): hero com foto da obra, status, % concluído, próxima etapa, prazo, última atualização. Timeline das 8 etapas (já existe `seed_etapas`), galeria estilo Instagram, documentos, chat com engenheiro. Visual clean/Airbnb. Reaproveita `AnimatedHouse`, `BeforeAfterPorEtapa`, hooks atuais.
+- **Engenheiro** (`/app/engenheiro`): mantém o `DashboardEngenheiro` atual (já tem KPIs, charts, atenção, atividade). Pequeno polimento corporativo + atalho “Nova obra” e “Gerar token”.
+- **Arquiteto** (`/app/arquiteto`): KPIs de projetos vinculados, lista de revisões pendentes (usa `aprovacoes`), upload de documentos (`documentos` bucket).
+- **Mestre de Obras** (`/app/mestre`): obras do dia, atalho diário de obra (já existe `diario_obra`), atalho upload de foto, próximas etapas. Layout operacional denso.
+- **Admin** (`/app/admin`): contagem global de usuários por role, total de obras, obras ativas, plano distribuído, lista de últimos cadastros. Listagens em `/app/admin/usuarios` e `/app/admin/obras`.
 
-## Componentes reutilizáveis
+### 5. Contas de teste
+Após a aprovação da migration, vou inserir via tool de insert 4 contas demo com senhas fixas e roles diferentes, e deixar as credenciais documentadas na resposta:
+- `cliente@demo.com`, `engenheiro@demo.com`, `arquiteto@demo.com`, `mestre@demo.com` (admin já pode ser promovido a partir de qualquer um). Senha padrão: `Demo123!`.
 
-- `<ObraLayout>` com sidebar de tabs
-- `<AppShell>` com sidebar principal
-- `<BeforeAfterSlider>`, `<GanttChart>`, `<ChatPanel>`, `<TimelineFeed>`, `<FinanceiroPanel>`, `<DiarioEditor>`, `<AprovacaoCard>`, `<QrCodeObra>`, `<View3DObra>`, `<ClimaWidget>`
+### 6. Garantias de não-regressão
+- Não toco em `useAuth`, `client.ts`, `types.ts`, migrations existentes.
+- Não removo nenhuma rota; apenas adiciono e protejo.
+- `Pricing`, `Planos`, `PlanGate`, token público, portfolio público continuam funcionando.
+- Sem mudanças de schema nesta fase exceto a criação dos 4 usuários demo (via auth admin) e seus papéis em `user_roles`. Será uma única migration/insert.
 
-## Observações
+## Fases seguintes (não nesta entrega)
+- Gantt de cronograma editável.
+- Chat em tempo real cliente↔engenheiro (Realtime no `mensagens`).
+- Gestão de equipe e materiais (tabelas novas) para o Mestre.
+- Painel admin com auditoria/logs e métricas de faturamento.
+- Busca global e exportação PDF universal.
 
-- Trabalho extenso — vou implementar de forma sequencial, testando build a cada fase
-- Vou pedir aprovação da migration do banco antes de prosseguir
-- Stripe/pagamentos ficam fora deste escopo (não estão no mapa)
-- Vou reaproveitar tudo que já existe (AnimatedHouse, Dashboard atual, landing)
+Confirma para eu seguir com esta fase 1?
