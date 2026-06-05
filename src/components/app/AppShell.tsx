@@ -12,6 +12,61 @@ import {
 import { cn } from "@/lib/utils";
 import { ROLE_LABEL, type Role } from "@/lib/rbac";
 
+type LinkItem = {
+  to: string;
+  icon: any;
+  label: string;
+  end?: boolean;
+  badge?: number;
+};
+
+function buildLinks(role: Role | null, naoLidas: number): LinkItem[] {
+  const notif: LinkItem = { to: "/app/notificacoes", icon: Bell, label: "Notificações", badge: naoLidas };
+  const perfil: LinkItem = { to: "/app/perfil", icon: User, label: "Perfil" };
+
+  if (role === "admin") {
+    return [
+      { to: "/app/admin", icon: Shield, label: "Dashboard", end: true },
+      { to: "/app/admin/usuarios", icon: Users, label: "Usuários" },
+      { to: "/app/admin/obras", icon: Building2, label: "Obras" },
+      { to: "/app/planos", icon: Crown, label: "Planos" },
+      notif, perfil,
+    ];
+  }
+  if (role === "engenheiro") {
+    return [
+      { to: "/app/engenheiro", icon: LayoutDashboard, label: "Dashboard", end: true },
+      { to: "/app", icon: Building2, label: "Obras", end: true },
+      { to: "/app/obras/nova", icon: Plus, label: "Nova obra" },
+      { to: "/app/portfolio", icon: Image, label: "Portfólio" },
+      { to: "/app/planos", icon: Crown, label: "Planos" },
+      notif, perfil,
+    ];
+  }
+  if (role === "arquiteto") {
+    return [
+      { to: "/app/arquiteto", icon: LayoutDashboard, label: "Dashboard", end: true },
+      { to: "/app", icon: Layers, label: "Projetos", end: true },
+      { to: "/app/portfolio", icon: GalleryHorizontal, label: "Portfólio" },
+      notif, perfil,
+    ];
+  }
+  if (role === "mestre_obras") {
+    return [
+      { to: "/app/mestre", icon: LayoutDashboard, label: "Dashboard", end: true },
+      { to: "/app", icon: HardHat, label: "Obras", end: true },
+      { to: "/app/obras/nova", icon: Plus, label: "Nova obra" },
+      notif, perfil,
+    ];
+  }
+  // cliente (default)
+  return [
+    { to: "/app/cliente", icon: LayoutDashboard, label: "Minha obra", end: true },
+    { to: "/app/notificacoes", icon: MessageSquare, label: "Mensagens", badge: naoLidas },
+    perfil,
+  ];
+}
+
 export default function AppShell({ children }: { children: ReactNode }) {
   const { user, loading, role, signOut } = useAuth();
   const { naoLidas } = useNotificacoes();
