@@ -7,12 +7,20 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import AnimatedHouse from "@/components/obra/AnimatedHouse";
-import { Bell } from "lucide-react";
+import { Bell, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import VincularObraToken from "@/components/obra/VincularObraToken";
 
 export default function DashboardCliente() {
   const { user } = useAuth();
   const [obras, setObras] = useState<any[]>([]);
   const [naoLidas, setNaoLidas] = useState(0);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  function handleVinculada(obra: any) {
+    setObras(prev => prev.some(o => o.id === obra.id) ? prev : [...prev, obra]);
+    setDialogOpen(false);
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -35,15 +43,32 @@ export default function DashboardCliente() {
           <h1 className="text-3xl font-extrabold">Minhas obras</h1>
           <p className="text-muted-foreground">Acompanhe o progresso da sua construção</p>
         </div>
-        {naoLidas > 0 && (
-          <Link to="/app/notificacoes">
-            <Badge className="gap-1 py-2 px-3"><Bell className="h-4 w-4"/>{naoLidas} novas</Badge>
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          {naoLidas > 0 && (
+            <Link to="/app/notificacoes">
+              <Badge className="gap-1 py-2 px-3"><Bell className="h-4 w-4"/>{naoLidas} novas</Badge>
+            </Link>
+          )}
+          {obras.length > 0 && (
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-1"><Plus className="h-4 w-4"/>Vincular outra obra</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Vincular obra por token</DialogTitle>
+                </DialogHeader>
+                <VincularObraToken compact onVinculada={handleVinculada} />
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       {obras.length === 0 ? (
-        <Card className="p-12 text-center text-muted-foreground">Você ainda não tem obras vinculadas como cliente.</Card>
+        <Card className="p-8 md:p-12 max-w-xl mx-auto">
+          <VincularObraToken onVinculada={handleVinculada} />
+        </Card>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
           {obras.map(o => (
