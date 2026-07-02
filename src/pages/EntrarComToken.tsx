@@ -100,6 +100,13 @@ export default function EntrarComToken() {
 
           <div className="mt-6 pt-6 border-t border-border text-center">
             <p className="text-sm text-muted-foreground">
+              Prefere salvar isso na sua conta e ver depois sem precisar do link?{" "}
+              <Link to="/auth" className="text-primary font-medium hover:underline">
+                Crie uma conta
+              </Link>{" "}
+              e cole o token lá dentro.
+            </p>
+            <p className="text-sm text-muted-foreground mt-3">
               É engenheiro ou arquiteto?{" "}
               <Link to="/auth" className="text-primary font-medium hover:underline">
                 Fazer login
