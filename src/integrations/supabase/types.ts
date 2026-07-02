@@ -553,6 +553,7 @@ export type Database = {
         Args: { _obra: string; _user: string }
         Returns: boolean
       }
+      vincular_obra_por_token: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
       app_role:
