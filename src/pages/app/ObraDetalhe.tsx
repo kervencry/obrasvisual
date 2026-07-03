@@ -840,7 +840,7 @@ function QrTab({ obra }: { obra: any }) {
         {[
           { texto: "Copie o token acima", Icon: Copy },
           { texto: "Envie para o cliente via WhatsApp", Icon: Share2 },
-          { texto: "Cliente cola o token dentro da conta dele", Icon: KeyRound },
+          { texto: "Cliente cola o token dentro da conta dele", Icon: Key },
         ].map((s, i) => (
           <div key={i} className="bg-card border border-border rounded-xl p-3 text-center">
             <s.Icon className="h-5 w-5 mx-auto mb-1 text-primary" />
