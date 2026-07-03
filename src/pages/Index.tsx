@@ -41,8 +41,8 @@ function LandingNav() {
           ))}
         </div>
         <div className="hidden md:flex items-center gap-2">
-          <Link to="/entrar" className="text-sm font-semibold px-3 py-2 border-2 hover:bg-[#e8dccb] transition-colors" style={{ borderColor: IRON, color: IRON }}>
-            Tenho um token
+          <Link to="/auth" className="text-sm font-semibold px-3 py-2 border-2 hover:bg-[#e8dccb] transition-colors" style={{ borderColor: IRON, color: IRON }}>
+            Criar conta
           </Link>
           <Link to="/auth" className={`text-sm ${heading} px-4 py-2 border-2 transition-colors`} style={{ background: IRON, color: PAPER, borderColor: IRON }}>
             Entrar
@@ -58,7 +58,7 @@ function LandingNav() {
             <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="block text-sm font-semibold" style={{ color: IRON }}>{l.label}</a>
           ))}
           <div className="pt-3 border-t-2 flex flex-col gap-2" style={{ borderColor: IRON }}>
-            <Link to="/entrar" className="text-sm font-semibold px-3 py-2 border-2 text-center" style={{ borderColor: IRON, color: IRON }}>Tenho um token</Link>
+            <Link to="/auth" className="text-sm font-semibold px-3 py-2 border-2 text-center" style={{ borderColor: IRON, color: IRON }}>Criar conta</Link>
             <Link to="/auth" className={`text-sm ${heading} px-4 py-2 text-center border-2`} style={{ background: IRON, color: PAPER, borderColor: IRON }}>Entrar</Link>
           </div>
         </div>
@@ -305,16 +305,16 @@ function Portal() {
               O cliente abre o portal no celular e vê tudo: percentual da etapa, últimas fotos, previsão de entrega. Você entrega transparência real, ele para de ligar.
             </p>
             <ul className="space-y-2 text-sm">
-              {["Link exclusivo por obra", "Cliente também pode criar conta e salvar o token", "Funciona no celular sem baixar nada"].map((t, i) => (
+              {["Link exclusivo por obra", "Cliente cria conta e vincula a obra pelo token dentro do painel", "Funciona no celular sem baixar nada"].map((t, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <Check className="w-4 h-4 mt-1 shrink-0" style={{ color: TERRACOTA }} /> {t}
                 </li>
               ))}
             </ul>
           </div>
-          <Link to="/entrar" className={`mt-6 ${heading} inline-flex items-center gap-2 px-6 py-3 border-2 w-fit hover:bg-[${TERRACOTA}] transition-colors`}
+          <Link to="/auth" className={`mt-6 ${heading} inline-flex items-center gap-2 px-6 py-3 border-2 w-fit transition-colors`}
             style={{ borderColor: PAPER, background: TERRACOTA, color: PAPER }}>
-            Ver portal de demonstração <ArrowRight className="w-4 h-4" />
+            Criar conta do cliente <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -599,9 +599,9 @@ function Fim() {
             style={{ background: IRON, color: PAPER, borderColor: IRON }}>
             Criar conta grátis
           </Link>
-          <Link to="/entrar" className={`${heading} px-6 py-4 border-2 text-center`}
+          <Link to="/auth" className={`${heading} px-6 py-4 border-2 text-center`}
             style={{ borderColor: PAPER, color: PAPER }}>
-            Sou cliente, tenho um token
+            Sou cliente — vincular obra
           </Link>
         </div>
       </div>

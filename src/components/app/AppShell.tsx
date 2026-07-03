@@ -84,8 +84,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
-              <HardHat className="h-6 w-6 text-primary" />
-              <span className="font-extrabold text-lg">ObraVisual</span>
+              <span className="inline-block w-5 h-5 border-2 border-foreground bg-primary" />
+              <span className="font-extrabold text-lg uppercase tracking-tight">ObraVisual</span>
             </div>
             <ThemeToggle />
           </div>
@@ -118,7 +118,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </aside>
       <main className="flex-1 overflow-auto">
         <div className="md:hidden border-b border-border bg-card p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2"><HardHat className="h-5 w-5 text-primary"/><span className="font-bold">ObraVisual</span></div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-4 h-4 border-2 border-foreground bg-primary" />
+            <span className="font-bold uppercase tracking-tight">ObraVisual</span>
+          </div>
           <div className="flex items-center gap-2">
             <NavLink to="/app/notificacoes" className="relative inline-flex items-center justify-center h-9 w-9 rounded-md hover:bg-muted">
               <Bell className="h-5 w-5"/>

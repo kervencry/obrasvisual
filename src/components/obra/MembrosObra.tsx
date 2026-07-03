@@ -14,10 +14,10 @@ import { toast } from "sonner";
 import { notificar } from "@/lib/notificar";
 
 const PAPEL_COLOR: Record<string, string> = {
-  engenheiro: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
-  arquiteto: "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30",
-  mestre_obras: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  cliente: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+  engenheiro: "bg-primary/15 text-primary border-primary/30",
+  arquiteto: "bg-secondary text-secondary-foreground border-border",
+  mestre_obras: "bg-accent/20 text-foreground border-accent/40",
+  cliente: "bg-muted text-muted-foreground border-border",
 };
 
 export default function MembrosObra({ obraId, ownerId }: { obraId: string; ownerId: string }) {

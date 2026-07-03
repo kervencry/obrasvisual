@@ -18,7 +18,7 @@ export const STAGES: { id: ObraStage; label: string; percent: number }[] = [
   { id: "cobertura",   label: "Cobertura",     percent: 57 },
   { id: "instalacoes", label: "Instalações",   percent: 71 },
   { id: "acabamento",  label: "Acabamento",    percent: 85 },
-  { id: "entregue",    label: "Entregue 🎉",   percent: 100 },
+  { id: "entregue",    label: "Entregue",      percent: 100 },
 ];
 
 interface Props {

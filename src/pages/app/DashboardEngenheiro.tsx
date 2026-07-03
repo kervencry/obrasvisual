@@ -112,7 +112,7 @@ export default function DashboardEngenheiro() {
 
       <Card className="p-4">
         <h3 className="font-semibold mb-3 flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-destructive"/>Obras que precisam de atenção</h3>
-        {precisamAtencao.length === 0 ? <p className="text-sm text-muted-foreground">Tudo em dia! 🎉</p> : (
+        {precisamAtencao.length === 0 ? <p className="text-sm text-muted-foreground">Tudo em dia.</p> : (
           <div className="space-y-2">
             {precisamAtencao.map(o => (
               <Link key={o.id} to={`/app/obras/${o.id}`} className="block">

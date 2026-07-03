@@ -228,9 +228,16 @@ export default function ObraDetalhe() {
                     e.status === "em_andamento" ? "text-accent" :
                     "text-muted-foreground"
                   }`}>
-                    {concluido ? "✅ Concluído" :
-                     e.status === "em_andamento" ? "⚡ Em andamento" :
-                     "⬜ Não iniciado"}
+                    <span className="inline-flex items-center gap-1">
+                      <span className={`inline-block h-2 w-2 rounded-full ${
+                        concluido ? "bg-primary" :
+                        e.status === "em_andamento" ? "bg-accent" :
+                        "bg-muted-foreground/40"
+                      }`} />
+                      {concluido ? "Concluído" :
+                       e.status === "em_andamento" ? "Em andamento" :
+                       "Não iniciado"}
+                    </span>
                   </div>
 
                   {/* Hint para owner */}
@@ -831,12 +838,12 @@ function QrTab({ obra }: { obra: any }) {
       {/* Instruções */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { texto: "Copie o token acima", icon: "📋" },
-          { texto: "Envie para o cliente via WhatsApp", icon: "📱" },
-          { texto: "Cliente acessa /entrar e cola o token", icon: "🏗️" },
+          { texto: "Copie o token acima", Icon: Copy },
+          { texto: "Envie para o cliente via WhatsApp", Icon: Share2 },
+          { texto: "Cliente cola o token dentro da conta dele", Icon: Key },
         ].map((s, i) => (
           <div key={i} className="bg-card border border-border rounded-xl p-3 text-center">
-            <div className="text-2xl mb-1">{s.icon}</div>
+            <s.Icon className="h-5 w-5 mx-auto mb-1 text-primary" />
             <p className="text-xs text-muted-foreground">{s.texto}</p>
           </div>
         ))}
