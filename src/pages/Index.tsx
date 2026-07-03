@@ -41,8 +41,8 @@ function LandingNav() {
           ))}
         </div>
         <div className="hidden md:flex items-center gap-2">
-          <Link to="/entrar" className="text-sm font-semibold px-3 py-2 border-2 hover:bg-[#e8dccb] transition-colors" style={{ borderColor: IRON, color: IRON }}>
-            Tenho um token
+          <Link to="/auth" className="text-sm font-semibold px-3 py-2 border-2 hover:bg-[#e8dccb] transition-colors" style={{ borderColor: IRON, color: IRON }}>
+            Criar conta
           </Link>
           <Link to="/auth" className={`text-sm ${heading} px-4 py-2 border-2 transition-colors`} style={{ background: IRON, color: PAPER, borderColor: IRON }}>
             Entrar
@@ -58,7 +58,7 @@ function LandingNav() {
             <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="block text-sm font-semibold" style={{ color: IRON }}>{l.label}</a>
           ))}
           <div className="pt-3 border-t-2 flex flex-col gap-2" style={{ borderColor: IRON }}>
-            <Link to="/entrar" className="text-sm font-semibold px-3 py-2 border-2 text-center" style={{ borderColor: IRON, color: IRON }}>Tenho um token</Link>
+            <Link to="/auth" className="text-sm font-semibold px-3 py-2 border-2 text-center" style={{ borderColor: IRON, color: IRON }}>Criar conta</Link>
             <Link to="/auth" className={`text-sm ${heading} px-4 py-2 text-center border-2`} style={{ background: IRON, color: PAPER, borderColor: IRON }}>Entrar</Link>
           </div>
         </div>
