@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Building2, MapPin, Calendar, TrendingUp } from "lucide-react";
+import { Plus, Search, Building2, MapPin, Calendar, TrendingUp, CheckCircle2, Circle } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedHouse from "@/components/obra/AnimatedHouse";
 
@@ -13,11 +13,11 @@ const STATUS_LABEL: Record<string, string> = {
   pausada: "Pausada", concluida: "Concluída", cancelada: "Cancelada",
 };
 const STATUS_COLOR: Record<string, string> = {
-  planejamento: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  em_andamento: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-  pausada: "bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-400",
-  concluida: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  cancelada: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  planejamento: "bg-secondary text-secondary-foreground",
+  em_andamento: "bg-accent/20 text-foreground border border-accent/40",
+  pausada: "bg-muted text-muted-foreground",
+  concluida: "bg-primary/15 text-primary border border-primary/30",
+  cancelada: "bg-destructive/15 text-destructive border border-destructive/30",
 };
 
 export default function Obras() {
@@ -118,11 +118,19 @@ export default function Obras() {
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <Building2 className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-xl font-bold mb-2">Bem-vindo ao ObraVisual! 👋</h2>
+          <h2 className="text-xl font-bold mb-2">Bem-vindo ao ObraVisual</h2>
           <p className="text-muted-foreground mb-6 max-w-sm mx-auto">Cadastre sua primeira obra em 1 minuto e comece a acompanhar o progresso em tempo real.</p>
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm mb-8">
-            {["✅ Criar conta", "⬜ Cadastrar obra", "⬜ Convidar equipe", "⬜ Adicionar fotos"].map((item, i) => (
-              <span key={i} className={i === 0 ? "text-green-600 font-medium" : "text-muted-foreground"}>{item}</span>
+            {[
+              { label: "Criar conta", done: true },
+              { label: "Cadastrar obra", done: false },
+              { label: "Convidar equipe", done: false },
+              { label: "Adicionar fotos", done: false },
+            ].map((item, i) => (
+              <span key={i} className={`inline-flex items-center gap-1.5 ${item.done ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                {item.done ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
+                {item.label}
+              </span>
             ))}
           </div>
           <Button size="lg" onClick={() => nav("/app/obras/nova")}>
