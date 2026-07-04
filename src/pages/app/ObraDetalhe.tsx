@@ -1030,7 +1030,7 @@ function ConfigTab({ obra, onUpdate }: { obra: any; onUpdate: () => void }) {
 }
 
 // ===== PDF =====
-function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[]) {
+function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[], abertura = "", conclusao = "") {
   const doc = new jsPDF();
   doc.setFontSize(20); doc.text(`Relatório — ${obra.nome}`, 14, 20);
   doc.setFontSize(10);
@@ -1038,6 +1038,12 @@ function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[]) {
   doc.text(`Status: ${obra.status} · Progresso: ${obra.percentual}% · Etapa: ${obra.etapa_atual}`, 14, 36);
   doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 42);
   let y = 54;
+  if (abertura) {
+    doc.setFontSize(11); doc.text("Apresentação", 14, y); y += 5;
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize(abertura, 180);
+    doc.text(lines, 14, y); y += lines.length * 5 + 4;
+  }
   doc.setFontSize(14); doc.text("Etapas", 14, y); y += 6;
   doc.setFontSize(10);
   etapas.forEach(e => { doc.text(`• ${e.etapa}: ${e.percentual}% — ${e.status}`, 16, y); y += 5; });
@@ -1047,6 +1053,12 @@ function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[]) {
   doc.text(`Orçamento previsto: R$ ${Number(obra.valor_previsto || 0).toLocaleString("pt-BR")}`, 16, y); y += 5;
   doc.text(`Gastos: R$ ${gastos.toLocaleString("pt-BR")}`, 16, y); y += 5;
   y += 4; doc.setFontSize(14); doc.text(`Fotos (${fotos.length})`, 14, y);
+  if (conclusao) {
+    y += 8; doc.setFontSize(11); doc.text("Conclusão", 14, y); y += 5;
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize(conclusao, 180);
+    doc.text(lines, 14, y);
+  }
   doc.save(`relatorio-${obra.nome}.pdf`);
 }
 
