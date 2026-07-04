@@ -50,6 +50,7 @@ export default function ObraDetalhe() {
   const [diario, setDiario] = useState<any[]>([]);
   const [aprov, setAprov] = useState<any[]>([]);
   const [stage, setStage] = useState<ObraStage>("terreno");
+  const [checklistEtapa, setChecklistEtapa] = useState<any>(null);
 
   async function refresh() {
     if (!id) return;
@@ -182,22 +183,15 @@ export default function ObraDetalhe() {
             {etapas.map((e, i) => {
               const concluido = e.status === "concluido" || e.status === "aprovado";
               return (
-                <button
+                <div
                   key={e.id}
-                  disabled={!isOwner}
-                  onClick={() => {
-                    if (!isOwner) return;
-                    const novoStatus = concluido ? "nao_iniciado" : "concluido";
-                    updateEtapa(e, { status: novoStatus, percentual: concluido ? 0 : e.percentual });
-                    if (!concluido) setEtapaAtual(e.etapa);
-                  }}
                   className={`relative p-4 rounded-2xl border-2 text-left transition-all duration-200 ${
                     concluido
                       ? "border-primary bg-primary/10 shadow-md shadow-primary/10"
                       : e.status === "em_andamento"
                       ? "border-accent/50 bg-accent/5"
                       : "border-border bg-card hover:border-primary/30"
-                  } ${isOwner ? "cursor-pointer hover:shadow-md" : "cursor-default"}`}
+                  }`}
                 >
                   {/* Número da etapa */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mb-3 ${
@@ -253,14 +247,39 @@ export default function ObraDetalhe() {
 
                   {/* Hint para owner */}
                   {isOwner && (
-                    <p className="text-[10px] text-muted-foreground mt-2 opacity-60">
-                      {concluido ? "Clique para desmarcar" : "Clique para marcar como concluído"}
-                    </p>
+                    <div className="mt-3 flex gap-1">
+                      <Button size="sm" variant="outline" className="h-7 text-xs flex-1"
+                        onClick={() => setChecklistEtapa(e)}>
+                        <ListChecks className="h-3 w-3 mr-1" />Checklist
+                      </Button>
+                      <Button size="sm" variant={concluido ? "ghost" : "default"} className="h-7 text-xs"
+                        onClick={() => {
+                          const novoStatus = concluido ? "nao_iniciado" : "concluido";
+                          updateEtapa(e, { status: novoStatus, percentual: concluido ? 0 : e.percentual });
+                          if (!concluido) setEtapaAtual(e.etapa);
+                        }}>
+                        {concluido ? "Desmarcar" : "Concluir"}
+                      </Button>
+                    </div>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>
+
+          {checklistEtapa && (
+            <ChecklistEtapa
+              open={!!checklistEtapa}
+              onOpenChange={(v) => !v && setChecklistEtapa(null)}
+              etapaRow={checklistEtapa}
+              obra={obra}
+              userId={user?.id ?? ""}
+              onCompletar={() => {
+                updateEtapa(checklistEtapa, { status: "concluido", percentual: checklistEtapa.percentual });
+                setEtapaAtual(checklistEtapa.etapa);
+              }}
+            />
+          )}
 
           {/* Progresso geral */}
           <div className="mt-4 p-4 bg-card border border-border rounded-2xl">
