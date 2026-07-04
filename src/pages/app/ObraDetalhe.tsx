@@ -31,6 +31,7 @@ import jsPDF from "jspdf";
 import MembrosObra from "@/components/obra/MembrosObra";
 import { notificar, notificarMembros } from "@/lib/notificar";
 import PlanGate from "@/components/obra/PlanGate";
+import DiarioIALivre from "@/components/obra/DiarioIALivre";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
