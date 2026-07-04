@@ -659,8 +659,9 @@ function DiarioTab({ obraId, diario, userId, onChange }: any) {
   });
   return (
     <div className="space-y-4">
+      <DiarioIALivre obraId={obraId} userId={userId} onSaved={onChange} />
       <Card className="p-4 space-y-3">
-        <h4 className="font-semibold">Novo registro</h4>
+        <h4 className="font-semibold">Novo registro (manual)</h4>
         <Input placeholder="Título" value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} />
         <Textarea placeholder="O que aconteceu hoje na obra..." rows={3} value={form.conteudo} onChange={e => setForm({ ...form, conteudo: e.target.value })} />
         <div className="grid grid-cols-2 gap-2">
