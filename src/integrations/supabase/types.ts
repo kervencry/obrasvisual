@@ -58,6 +58,57 @@ export type Database = {
           },
         ]
       }
+      checklist_etapa: {
+        Row: {
+          concluido: boolean
+          concluido_em: string | null
+          concluido_por: string | null
+          created_at: string
+          etapa_id: string
+          id: string
+          item: string
+          obra_id: string
+          ordem: number
+        }
+        Insert: {
+          concluido?: boolean
+          concluido_em?: string | null
+          concluido_por?: string | null
+          created_at?: string
+          etapa_id: string
+          id?: string
+          item: string
+          obra_id: string
+          ordem?: number
+        }
+        Update: {
+          concluido?: boolean
+          concluido_em?: string | null
+          concluido_por?: string | null
+          created_at?: string
+          etapa_id?: string
+          id?: string
+          item?: string
+          obra_id?: string
+          ordem?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_etapa_etapa_id_fkey"
+            columns: ["etapa_id"]
+            isOneToOne: false
+            referencedRelation: "etapas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_etapa_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diario_obra: {
         Row: {
           clima: string | null
@@ -461,6 +512,97 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      resumos_semanais: {
+        Row: {
+          conteudo: string
+          created_at: string
+          id: string
+          obra_id: string
+          periodo_fim: string
+          periodo_inicio: string
+          user_id: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          id?: string
+          obra_id: string
+          periodo_fim: string
+          periodo_inicio: string
+          user_id: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          id?: string
+          obra_id?: string
+          periodo_fim?: string
+          periodo_inicio?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resumos_semanais_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tarefas_obra: {
+        Row: {
+          concluida_em: string | null
+          created_at: string
+          criado_por: string
+          descricao: string | null
+          foto_url: string | null
+          id: string
+          obra_id: string
+          prazo: string | null
+          responsavel_id: string | null
+          status: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          concluida_em?: string | null
+          created_at?: string
+          criado_por: string
+          descricao?: string | null
+          foto_url?: string | null
+          id?: string
+          obra_id: string
+          prazo?: string | null
+          responsavel_id?: string | null
+          status?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          concluida_em?: string | null
+          created_at?: string
+          criado_por?: string
+          descricao?: string | null
+          foto_url?: string | null
+          id?: string
+          obra_id?: string
+          prazo?: string | null
+          responsavel_id?: string | null
+          status?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarefas_obra_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       timeline_eventos: {
         Row: {
