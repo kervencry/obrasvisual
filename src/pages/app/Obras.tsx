@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Building2, MapPin, Calendar, TrendingUp, CheckCircle2, Circle } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedHouse from "@/components/obra/AnimatedHouse";
+import BriefingIA from "@/components/obra/BriefingIA";
+import { useAuth } from "@/hooks/useAuth";
 
 const STATUS_LABEL: Record<string, string> = {
   planejamento: "Planejamento", em_andamento: "Em andamento",
@@ -22,6 +24,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default function Obras() {
   const nav = useNavigate();
+  const { user } = useAuth();
   const [obras, setObras] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState("");
@@ -74,6 +77,8 @@ export default function Obras() {
           <Plus className="h-4 w-4 mr-2" />Nova obra
         </Button>
       </div>
+
+      {user && obras.length > 1 && <BriefingIA obras={obras} userId={user.id} />}
 
       {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">

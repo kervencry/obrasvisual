@@ -32,6 +32,11 @@ import MembrosObra from "@/components/obra/MembrosObra";
 import { notificar, notificarMembros } from "@/lib/notificar";
 import PlanGate from "@/components/obra/PlanGate";
 import DiarioIALivre from "@/components/obra/DiarioIALivre";
+import ResumoSemanal from "@/components/obra/ResumoSemanal";
+import AlertaRiscoChuva from "@/components/obra/AlertaRiscoChuva";
+import ChecklistEtapa from "@/components/obra/ChecklistEtapa";
+import TarefasKanban from "@/components/obra/TarefasKanban";
+import { Sparkles, ListTodo } from "lucide-react";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -45,6 +50,7 @@ export default function ObraDetalhe() {
   const [diario, setDiario] = useState<any[]>([]);
   const [aprov, setAprov] = useState<any[]>([]);
   const [stage, setStage] = useState<ObraStage>("terreno");
+  const [checklistEtapa, setChecklistEtapa] = useState<any>(null);
 
   async function refresh() {
     if (!id) return;
@@ -136,6 +142,8 @@ export default function ObraDetalhe() {
             <TabsTrigger value="antes"><ImageIcon className="h-4 w-4 mr-1" />Antes/depois</TabsTrigger>
             <TabsTrigger value="qr"><QrCode className="h-4 w-4 mr-1" />QR / Cliente</TabsTrigger>
             <TabsTrigger value="equipe"><Users className="h-4 w-4 mr-1" />Equipe</TabsTrigger>
+            <TabsTrigger value="tarefas"><ListTodo className="h-4 w-4 mr-1" />Tarefas</TabsTrigger>
+            <TabsTrigger value="resumo"><Sparkles className="h-4 w-4 mr-1" />Resumo IA</TabsTrigger>
             <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1" />Relatório</TabsTrigger>
             {isOwner && <TabsTrigger value="config"><Settings className="h-4 w-4 mr-1" />Config.</TabsTrigger>}
           </TabsList>
@@ -143,6 +151,9 @@ export default function ObraDetalhe() {
 
         {/* VISÃO GERAL */}
         <TabsContent value="visao" className="mt-4">
+          <div className="mb-4">
+            <AlertaRiscoChuva lat={obra.latitude} lon={obra.longitude} etapas={etapas} />
+          </div>
           <div className="grid lg:grid-cols-3 gap-4">
             <Card className="p-4 lg:col-span-2">
               <h3 className="font-semibold mb-3">Casa em construção</h3>
@@ -172,22 +183,15 @@ export default function ObraDetalhe() {
             {etapas.map((e, i) => {
               const concluido = e.status === "concluido" || e.status === "aprovado";
               return (
-                <button
+                <div
                   key={e.id}
-                  disabled={!isOwner}
-                  onClick={() => {
-                    if (!isOwner) return;
-                    const novoStatus = concluido ? "nao_iniciado" : "concluido";
-                    updateEtapa(e, { status: novoStatus, percentual: concluido ? 0 : e.percentual });
-                    if (!concluido) setEtapaAtual(e.etapa);
-                  }}
                   className={`relative p-4 rounded-2xl border-2 text-left transition-all duration-200 ${
                     concluido
                       ? "border-primary bg-primary/10 shadow-md shadow-primary/10"
                       : e.status === "em_andamento"
                       ? "border-accent/50 bg-accent/5"
                       : "border-border bg-card hover:border-primary/30"
-                  } ${isOwner ? "cursor-pointer hover:shadow-md" : "cursor-default"}`}
+                  }`}
                 >
                   {/* Número da etapa */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mb-3 ${
@@ -243,14 +247,39 @@ export default function ObraDetalhe() {
 
                   {/* Hint para owner */}
                   {isOwner && (
-                    <p className="text-[10px] text-muted-foreground mt-2 opacity-60">
-                      {concluido ? "Clique para desmarcar" : "Clique para marcar como concluído"}
-                    </p>
+                    <div className="mt-3 flex gap-1">
+                      <Button size="sm" variant="outline" className="h-7 text-xs flex-1"
+                        onClick={() => setChecklistEtapa(e)}>
+                        <ListChecks className="h-3 w-3 mr-1" />Checklist
+                      </Button>
+                      <Button size="sm" variant={concluido ? "ghost" : "default"} className="h-7 text-xs"
+                        onClick={() => {
+                          const novoStatus = concluido ? "nao_iniciado" : "concluido";
+                          updateEtapa(e, { status: novoStatus, percentual: concluido ? 0 : e.percentual });
+                          if (!concluido) setEtapaAtual(e.etapa);
+                        }}>
+                        {concluido ? "Desmarcar" : "Concluir"}
+                      </Button>
+                    </div>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>
+
+          {checklistEtapa && (
+            <ChecklistEtapa
+              open={!!checklistEtapa}
+              onOpenChange={(v) => !v && setChecklistEtapa(null)}
+              etapaRow={checklistEtapa}
+              obra={obra}
+              userId={user?.id ?? ""}
+              onCompletar={() => {
+                updateEtapa(checklistEtapa, { status: "concluido", percentual: checklistEtapa.percentual });
+                setEtapaAtual(checklistEtapa.etapa);
+              }}
+            />
+          )}
 
           {/* Progresso geral */}
           <div className="mt-4 p-4 bg-card border border-border rounded-2xl">
@@ -370,6 +399,16 @@ export default function ObraDetalhe() {
           <MembrosObra obraId={obra.id} ownerId={obra.owner_id} />
         </TabsContent>
 
+        {/* TAREFAS */}
+        <TabsContent value="tarefas" className="mt-4">
+          <TarefasKanbanWrapper obraId={obra.id} ownerId={obra.owner_id} userId={user?.id ?? ""} />
+        </TabsContent>
+
+        {/* RESUMO IA */}
+        <TabsContent value="resumo" className="mt-4">
+          <ResumoSemanal obra={obra} userId={user?.id ?? ""} />
+        </TabsContent>
+
         {/* RELATÓRIO */}
         <TabsContent value="relatorio" className="mt-4">
           <PlanGate feature="relatorioPDF" titulo="Relatórios em PDF">
@@ -377,11 +416,9 @@ export default function ObraDetalhe() {
               <FileText className="h-12 w-12 mx-auto text-primary mb-3" />
               <h3 className="font-bold mb-2">Relatório PDF da obra</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Gere um PDF com resumo, etapas, financeiro e fotos
+                Gere um PDF com narrativa profissional escrita por IA, etapas, financeiro e fotos
               </p>
-              <Button onClick={() => gerarPDF(obra, etapas, fin, fotos)}>
-                Baixar PDF
-              </Button>
+              <PdfButton obra={obra} etapas={etapas} fin={fin} fotos={fotos} />
             </Card>
           </PlanGate>
         </TabsContent>
@@ -1012,7 +1049,7 @@ function ConfigTab({ obra, onUpdate }: { obra: any; onUpdate: () => void }) {
 }
 
 // ===== PDF =====
-function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[]) {
+function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[], abertura = "", conclusao = "") {
   const doc = new jsPDF();
   doc.setFontSize(20); doc.text(`Relatório — ${obra.nome}`, 14, 20);
   doc.setFontSize(10);
@@ -1020,6 +1057,12 @@ function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[]) {
   doc.text(`Status: ${obra.status} · Progresso: ${obra.percentual}% · Etapa: ${obra.etapa_atual}`, 14, 36);
   doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 42);
   let y = 54;
+  if (abertura) {
+    doc.setFontSize(11); doc.text("Apresentação", 14, y); y += 5;
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize(abertura, 180);
+    doc.text(lines, 14, y); y += lines.length * 5 + 4;
+  }
   doc.setFontSize(14); doc.text("Etapas", 14, y); y += 6;
   doc.setFontSize(10);
   etapas.forEach(e => { doc.text(`• ${e.etapa}: ${e.percentual}% — ${e.status}`, 16, y); y += 5; });
@@ -1029,9 +1072,55 @@ function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[]) {
   doc.text(`Orçamento previsto: R$ ${Number(obra.valor_previsto || 0).toLocaleString("pt-BR")}`, 16, y); y += 5;
   doc.text(`Gastos: R$ ${gastos.toLocaleString("pt-BR")}`, 16, y); y += 5;
   y += 4; doc.setFontSize(14); doc.text(`Fotos (${fotos.length})`, 14, y);
+  if (conclusao) {
+    y += 8; doc.setFontSize(11); doc.text("Conclusão", 14, y); y += 5;
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize(conclusao, 180);
+    doc.text(lines, 14, y);
+  }
   doc.save(`relatorio-${obra.nome}.pdf`);
 }
 
 function useNavigate() {
   return null;
+}
+
+// ===== WRAPPER TAREFAS (busca membros) =====
+function TarefasKanbanWrapper({ obraId, ownerId, userId }: { obraId: string; ownerId: string; userId: string }) {
+  const [membros, setMembros] = useState<{ user_id: string; nome: string }[]>([]);
+  useEffect(() => {
+    (async () => {
+      const { data: m } = await supabase.from("obra_members").select("user_id").eq("obra_id", obraId);
+      const ids = [ownerId, ...((m ?? []).map((x: any) => x.user_id))];
+      const { data: profs } = await supabase.from("profiles").select("id, nome").in("id", ids);
+      setMembros((profs ?? []).map((p: any) => ({ user_id: p.id, nome: p.nome ?? "Sem nome" })));
+    })();
+  }, [obraId, ownerId]);
+  return <TarefasKanban obraId={obraId} userId={userId} membros={membros} />;
+}
+
+// ===== BOTÃO PDF COM NARRATIVA IA =====
+function PdfButton({ obra, etapas, fin, fotos }: any) {
+  const [loading, setLoading] = useState(false);
+  async function baixar() {
+    setLoading(true);
+    let abertura = "";
+    let conclusao = "";
+    try {
+      const { data } = await supabase.functions.invoke("pdf-narrativa", {
+        body: { obra, etapas, fin, fotosCount: fotos.length },
+      });
+      if (data && !(data as any).error) {
+        abertura = (data as any).abertura ?? "";
+        conclusao = (data as any).conclusao ?? "";
+      }
+    } catch { /* segue sem narrativa */ }
+    gerarPDF(obra, etapas, fin, fotos, abertura, conclusao);
+    setLoading(false);
+  }
+  return (
+    <Button onClick={baixar} disabled={loading}>
+      {loading ? "Gerando narrativa IA..." : "Baixar PDF"}
+    </Button>
+  );
 }
