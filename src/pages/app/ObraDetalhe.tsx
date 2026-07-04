@@ -1053,3 +1053,43 @@ function gerarPDF(obra: any, etapas: any[], fin: any[], fotos: any[]) {
 function useNavigate() {
   return null;
 }
+
+// ===== WRAPPER TAREFAS (busca membros) =====
+function TarefasKanbanWrapper({ obraId, ownerId, userId }: { obraId: string; ownerId: string; userId: string }) {
+  const [membros, setMembros] = useState<{ user_id: string; nome: string }[]>([]);
+  useEffect(() => {
+    (async () => {
+      const { data: m } = await supabase.from("obra_members").select("user_id").eq("obra_id", obraId);
+      const ids = [ownerId, ...((m ?? []).map((x: any) => x.user_id))];
+      const { data: profs } = await supabase.from("profiles").select("id, nome").in("id", ids);
+      setMembros((profs ?? []).map((p: any) => ({ user_id: p.id, nome: p.nome ?? "Sem nome" })));
+    })();
+  }, [obraId, ownerId]);
+  return <TarefasKanban obraId={obraId} userId={userId} membros={membros} />;
+}
+
+// ===== BOTÃO PDF COM NARRATIVA IA =====
+function PdfButton({ obra, etapas, fin, fotos }: any) {
+  const [loading, setLoading] = useState(false);
+  async function baixar() {
+    setLoading(true);
+    let abertura = "";
+    let conclusao = "";
+    try {
+      const { data } = await supabase.functions.invoke("pdf-narrativa", {
+        body: { obra, etapas, fin, fotosCount: fotos.length },
+      });
+      if (data && !(data as any).error) {
+        abertura = (data as any).abertura ?? "";
+        conclusao = (data as any).conclusao ?? "";
+      }
+    } catch { /* segue sem narrativa */ }
+    gerarPDF(obra, etapas, fin, fotos, abertura, conclusao);
+    setLoading(false);
+  }
+  return (
+    <Button onClick={baixar} disabled={loading}>
+      {loading ? "Gerando narrativa IA..." : "Baixar PDF"}
+    </Button>
+  );
+}
