@@ -32,6 +32,11 @@ import MembrosObra from "@/components/obra/MembrosObra";
 import { notificar, notificarMembros } from "@/lib/notificar";
 import PlanGate from "@/components/obra/PlanGate";
 import DiarioIALivre from "@/components/obra/DiarioIALivre";
+import ResumoSemanal from "@/components/obra/ResumoSemanal";
+import AlertaRiscoChuva from "@/components/obra/AlertaRiscoChuva";
+import ChecklistEtapa from "@/components/obra/ChecklistEtapa";
+import TarefasKanban from "@/components/obra/TarefasKanban";
+import { Sparkles, ListTodo } from "lucide-react";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -136,6 +141,8 @@ export default function ObraDetalhe() {
             <TabsTrigger value="antes"><ImageIcon className="h-4 w-4 mr-1" />Antes/depois</TabsTrigger>
             <TabsTrigger value="qr"><QrCode className="h-4 w-4 mr-1" />QR / Cliente</TabsTrigger>
             <TabsTrigger value="equipe"><Users className="h-4 w-4 mr-1" />Equipe</TabsTrigger>
+            <TabsTrigger value="tarefas"><ListTodo className="h-4 w-4 mr-1" />Tarefas</TabsTrigger>
+            <TabsTrigger value="resumo"><Sparkles className="h-4 w-4 mr-1" />Resumo IA</TabsTrigger>
             <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1" />Relatório</TabsTrigger>
             {isOwner && <TabsTrigger value="config"><Settings className="h-4 w-4 mr-1" />Config.</TabsTrigger>}
           </TabsList>
@@ -143,6 +150,9 @@ export default function ObraDetalhe() {
 
         {/* VISÃO GERAL */}
         <TabsContent value="visao" className="mt-4">
+          <div className="mb-4">
+            <AlertaRiscoChuva lat={obra.latitude} lon={obra.longitude} etapas={etapas} />
+          </div>
           <div className="grid lg:grid-cols-3 gap-4">
             <Card className="p-4 lg:col-span-2">
               <h3 className="font-semibold mb-3">Casa em construção</h3>
@@ -370,6 +380,16 @@ export default function ObraDetalhe() {
           <MembrosObra obraId={obra.id} ownerId={obra.owner_id} />
         </TabsContent>
 
+        {/* TAREFAS */}
+        <TabsContent value="tarefas" className="mt-4">
+          <TarefasKanbanWrapper obraId={obra.id} ownerId={obra.owner_id} userId={user?.id ?? ""} />
+        </TabsContent>
+
+        {/* RESUMO IA */}
+        <TabsContent value="resumo" className="mt-4">
+          <ResumoSemanal obra={obra} userId={user?.id ?? ""} />
+        </TabsContent>
+
         {/* RELATÓRIO */}
         <TabsContent value="relatorio" className="mt-4">
           <PlanGate feature="relatorioPDF" titulo="Relatórios em PDF">
@@ -377,11 +397,9 @@ export default function ObraDetalhe() {
               <FileText className="h-12 w-12 mx-auto text-primary mb-3" />
               <h3 className="font-bold mb-2">Relatório PDF da obra</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Gere um PDF com resumo, etapas, financeiro e fotos
+                Gere um PDF com narrativa profissional escrita por IA, etapas, financeiro e fotos
               </p>
-              <Button onClick={() => gerarPDF(obra, etapas, fin, fotos)}>
-                Baixar PDF
-              </Button>
+              <PdfButton obra={obra} etapas={etapas} fin={fin} fotos={fotos} />
             </Card>
           </PlanGate>
         </TabsContent>
