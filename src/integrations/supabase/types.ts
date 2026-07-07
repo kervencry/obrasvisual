@@ -904,6 +904,7 @@ export type Database = {
           nome: string
         }[]
       }
+      debug_auth: { Args: never; Returns: Json }
       get_obra_publica: { Args: { _id: string; _token: string }; Returns: Json }
       has_role: {
         Args: {
