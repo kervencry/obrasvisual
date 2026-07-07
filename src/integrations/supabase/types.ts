@@ -153,6 +153,50 @@ export type Database = {
           },
         ]
       }
+      documentos_obra: {
+        Row: {
+          arquivo_url: string | null
+          created_at: string
+          criado_por: string
+          data_validade: string | null
+          id: string
+          nome: string
+          obra_id: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          arquivo_url?: string | null
+          created_at?: string
+          criado_por: string
+          data_validade?: string | null
+          id?: string
+          nome: string
+          obra_id: string
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          arquivo_url?: string | null
+          created_at?: string
+          criado_por?: string
+          data_validade?: string | null
+          id?: string
+          nome?: string
+          obra_id?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_obra_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       etapas: {
         Row: {
           created_at: string
@@ -474,6 +518,144 @@ export type Database = {
         }
         Relationships: []
       }
+      orcamento_planejado: {
+        Row: {
+          created_at: string
+          criado_por: string
+          etapa: Database["public"]["Enums"]["etapa_id"]
+          id: string
+          mes_referencia: string
+          obra_id: string
+          updated_at: string
+          valor_planejado: number
+        }
+        Insert: {
+          created_at?: string
+          criado_por: string
+          etapa: Database["public"]["Enums"]["etapa_id"]
+          id?: string
+          mes_referencia: string
+          obra_id: string
+          updated_at?: string
+          valor_planejado: number
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string
+          etapa?: Database["public"]["Enums"]["etapa_id"]
+          id?: string
+          mes_referencia?: string
+          obra_id?: string
+          updated_at?: string
+          valor_planejado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamento_planejado_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orcamentos_fornecedores: {
+        Row: {
+          arquivo_url: string | null
+          created_at: string
+          criado_por: string
+          fornecedor: string
+          id: string
+          item: string
+          obra_id: string
+          observacoes: string | null
+          prazo_entrega: string | null
+          selecionado: boolean
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          arquivo_url?: string | null
+          created_at?: string
+          criado_por: string
+          fornecedor: string
+          id?: string
+          item: string
+          obra_id: string
+          observacoes?: string | null
+          prazo_entrega?: string | null
+          selecionado?: boolean
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          arquivo_url?: string | null
+          created_at?: string
+          criado_por?: string
+          fornecedor?: string
+          id?: string
+          item?: string
+          obra_id?: string
+          observacoes?: string | null
+          prazo_entrega?: string | null
+          selecionado?: boolean
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamentos_fornecedores_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paralisacoes_obra: {
+        Row: {
+          created_at: string
+          criado_por: string
+          data_fim: string | null
+          data_inicio: string
+          descricao: string | null
+          id: string
+          motivo: string
+          obra_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criado_por: string
+          data_fim?: string | null
+          data_inicio: string
+          descricao?: string | null
+          id?: string
+          motivo?: string
+          obra_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string
+          data_fim?: string | null
+          data_inicio?: string
+          descricao?: string | null
+          id?: string
+          motivo?: string
+          obra_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paralisacoes_obra_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -662,6 +844,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      visitas_obra: {
+        Row: {
+          agendado_por: string | null
+          created_at: string
+          criado_por: string
+          data_hora: string
+          duracao_minutos: number
+          id: string
+          obra_id: string
+          observacoes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agendado_por?: string | null
+          created_at?: string
+          criado_por: string
+          data_hora: string
+          duracao_minutos?: number
+          id?: string
+          obra_id: string
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agendado_por?: string | null
+          created_at?: string
+          criado_por?: string
+          data_hora?: string
+          duracao_minutos?: number
+          id?: string
+          obra_id?: string
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitas_obra_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
