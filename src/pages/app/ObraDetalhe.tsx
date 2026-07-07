@@ -36,7 +36,9 @@ import ResumoSemanal from "@/components/obra/ResumoSemanal";
 import AlertaRiscoChuva from "@/components/obra/AlertaRiscoChuva";
 import ChecklistEtapa from "@/components/obra/ChecklistEtapa";
 import TarefasKanban from "@/components/obra/TarefasKanban";
-import { Sparkles, ListTodo } from "lucide-react";
+import VisitasTab from "@/components/obra/VisitasTab";
+import OrcamentosTab from "@/components/obra/OrcamentosTab";
+import { Sparkles, ListTodo, CalendarClock, Package } from "lucide-react";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -143,6 +145,8 @@ export default function ObraDetalhe() {
             <TabsTrigger value="qr"><QrCode className="h-4 w-4 mr-1" />QR / Cliente</TabsTrigger>
             <TabsTrigger value="equipe"><Users className="h-4 w-4 mr-1" />Equipe</TabsTrigger>
             <TabsTrigger value="tarefas"><ListTodo className="h-4 w-4 mr-1" />Tarefas</TabsTrigger>
+            <TabsTrigger value="visitas"><CalendarClock className="h-4 w-4 mr-1" />Visitas</TabsTrigger>
+            <TabsTrigger value="orcamentos"><Package className="h-4 w-4 mr-1" />Orçamentos</TabsTrigger>
             <TabsTrigger value="resumo"><Sparkles className="h-4 w-4 mr-1" />Resumo IA</TabsTrigger>
             <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1" />Relatório</TabsTrigger>
             {isOwner && <TabsTrigger value="config"><Settings className="h-4 w-4 mr-1" />Config.</TabsTrigger>}
@@ -342,6 +346,14 @@ export default function ObraDetalhe() {
         {/* DIÁRIO */}
         <TabsContent value="diario" className="mt-4">
           <DiarioTab obraId={obra.id} diario={diario} userId={user?.id} onChange={refresh} />
+        </TabsContent>
+
+        <TabsContent value="visitas" className="mt-4">
+          <VisitasTab obraId={obra.id} userId={user?.id ?? ""} isEditor={isOwner} ownerId={obra.owner_id} />
+        </TabsContent>
+
+        <TabsContent value="orcamentos" className="mt-4">
+          <OrcamentosTab obraId={obra.id} userId={user?.id ?? ""} isEditor={isOwner} />
         </TabsContent>
 
         {/* GANTT */}
