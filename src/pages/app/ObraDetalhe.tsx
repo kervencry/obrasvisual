@@ -38,7 +38,11 @@ import ChecklistEtapa from "@/components/obra/ChecklistEtapa";
 import TarefasKanban from "@/components/obra/TarefasKanban";
 import VisitasTab from "@/components/obra/VisitasTab";
 import OrcamentosTab from "@/components/obra/OrcamentosTab";
-import { Sparkles, ListTodo, CalendarClock, Package } from "lucide-react";
+import DocumentosTab from "@/components/obra/DocumentosTab";
+import ParalisacoesTab from "@/components/obra/ParalisacoesTab";
+import CurvaS from "@/components/obra/CurvaS";
+import { exportarObraXLSX } from "@/lib/exportarObra";
+import { Sparkles, ListTodo, CalendarClock, Package, FolderOpen, Pause, FileSpreadsheet } from "lucide-react";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -53,6 +57,7 @@ export default function ObraDetalhe() {
   const [aprov, setAprov] = useState<any[]>([]);
   const [stage, setStage] = useState<ObraStage>("terreno");
   const [checklistEtapa, setChecklistEtapa] = useState<any>(null);
+  const [paralisacaoAtiva, setParalisacaoAtiva] = useState(false);
 
   async function refresh() {
     if (!id) return;
@@ -70,6 +75,8 @@ export default function ObraDetalhe() {
     setMsgs(m.data ?? []); setTl(t.data ?? []); setFin(fi.data ?? []);
     setDiario(d.data ?? []); setAprov(a.data ?? []);
     if (o.data) setStage(o.data.etapa_atual);
+    const { data: par } = await supabase.from("paralisacoes_obra").select("id").eq("obra_id", id).is("data_fim", null).limit(1);
+    setParalisacaoAtiva((par ?? []).length > 0);
   }
 
   useEffect(() => { refresh(); }, [id]);
@@ -125,6 +132,7 @@ export default function ObraDetalhe() {
         <div className="flex gap-2">
           <Badge variant="outline">{obra.tipo}</Badge>
           <Badge>{obra.status}</Badge>
+          {paralisacaoAtiva && <Badge variant="destructive" className="gap-1"><Pause className="h-3 w-3" />Paralisada</Badge>}
         </div>
       </div>
 
@@ -147,8 +155,11 @@ export default function ObraDetalhe() {
             <TabsTrigger value="tarefas"><ListTodo className="h-4 w-4 mr-1" />Tarefas</TabsTrigger>
             <TabsTrigger value="visitas"><CalendarClock className="h-4 w-4 mr-1" />Visitas</TabsTrigger>
             <TabsTrigger value="orcamentos"><Package className="h-4 w-4 mr-1" />Orçamentos</TabsTrigger>
+            <TabsTrigger value="documentos"><FolderOpen className="h-4 w-4 mr-1" />Documentos</TabsTrigger>
+            <TabsTrigger value="paralisacoes"><Pause className="h-4 w-4 mr-1" />Paralisações</TabsTrigger>
             <TabsTrigger value="resumo"><Sparkles className="h-4 w-4 mr-1" />Resumo IA</TabsTrigger>
             <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1" />Relatório</TabsTrigger>
+            <TabsTrigger value="exportar"><FileSpreadsheet className="h-4 w-4 mr-1" />Exportar</TabsTrigger>
             {isOwner && <TabsTrigger value="config"><Settings className="h-4 w-4 mr-1" />Config.</TabsTrigger>}
           </TabsList>
         </div>
@@ -337,9 +348,12 @@ export default function ObraDetalhe() {
         {/* FINANCEIRO */}
         <TabsContent value="financeiro" className="mt-4">
           <PlanGate feature="financeiro" titulo="Controle financeiro">
-            <FinanceiroTab obraId={obra.id} fin={fin} orcamento={orcamento}
-              gastos={gastos} valorPrev={obra.valor_previsto}
-              userId={user?.id} isOwner={isOwner} onChange={refresh} />
+            <div className="space-y-4">
+              <FinanceiroTab obraId={obra.id} fin={fin} orcamento={orcamento}
+                gastos={gastos} valorPrev={obra.valor_previsto}
+                userId={user?.id} isOwner={isOwner} onChange={refresh} />
+              <CurvaS obraId={obra.id} userId={user?.id ?? ""} fin={fin} isEditor={isOwner} />
+            </div>
           </PlanGate>
         </TabsContent>
 
@@ -354,6 +368,27 @@ export default function ObraDetalhe() {
 
         <TabsContent value="orcamentos" className="mt-4">
           <OrcamentosTab obraId={obra.id} userId={user?.id ?? ""} isEditor={isOwner} />
+        </TabsContent>
+
+        <TabsContent value="documentos" className="mt-4">
+          <DocumentosTab obraId={obra.id} userId={user?.id ?? ""} isEditor={isOwner} />
+        </TabsContent>
+
+        <TabsContent value="paralisacoes" className="mt-4">
+          <ParalisacoesTab obraId={obra.id} userId={user?.id ?? ""} isEditor={isOwner} />
+        </TabsContent>
+
+        <TabsContent value="exportar" className="mt-4">
+          <Card className="p-6 text-center">
+            <FileSpreadsheet className="h-12 w-12 mx-auto text-primary mb-3" />
+            <h3 className="font-bold mb-2">Exportar dados da obra</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Gera um arquivo Excel (.xlsx) com abas para Financeiro, Diário e Etapas.
+            </p>
+            <Button onClick={() => exportarObraXLSX(obra, fin, diario, etapas)}>
+              <Download className="h-4 w-4 mr-1" />Baixar planilha
+            </Button>
+          </Card>
         </TabsContent>
 
         {/* GANTT */}
