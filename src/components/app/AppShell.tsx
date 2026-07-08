@@ -1,13 +1,14 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { NavLink, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotificacoes } from "@/hooks/useNotificacoes";
 import { ThemeToggle } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   HardHat, LayoutDashboard, Plus, User, Bell, LogOut, Image, Building2,
   Crown, MessageSquare, FileText, ClipboardList, Users, Shield, Layers,
-  Camera, GalleryHorizontal,
+  Camera, GalleryHorizontal, Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROLE_LABEL, type Role } from "@/lib/rbac";
@@ -71,12 +72,31 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const { user, loading, role, signOut } = useAuth();
   const { naoLidas } = useNotificacoes();
   const nav = useNavigate();
+  const [openMenu, setOpenMenu] = useState(false);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando...</div>;
   if (!user) return <Navigate to="/auth" replace />;
 
   const links = buildLinks(role as Role | null, naoLidas);
   const roleLabel = role ? ROLE_LABEL[role as Role] : "";
+
+  const NavList = ({ onClick }: { onClick?: () => void }) => (
+    <>
+      {links.map((l: any) => (
+        <NavLink key={l.to + l.label} to={l.to} end={l.end} onClick={onClick}
+          className={({isActive}) => cn(
+            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition",
+            isActive ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-muted"
+          )}>
+          <l.icon className="h-4 w-4" />
+          <span className="flex-1">{l.label}</span>
+          {l.badge > 0 && (
+            <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">{l.badge}</span>
+          )}
+        </NavLink>
+      ))}
+    </>
+  );
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -96,19 +116,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           )}
         </div>
         <nav className="flex-1 p-2 space-y-1">
-          {links.map((l: any) => (
-            <NavLink key={l.to + l.label} to={l.to} end={l.end}
-              className={({isActive}) => cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition",
-                isActive ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-muted"
-              )}>
-              <l.icon className="h-4 w-4" />
-              <span className="flex-1">{l.label}</span>
-              {l.badge > 0 && (
-                <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">{l.badge}</span>
-              )}
-            </NavLink>
-          ))}
+          <NavList />
         </nav>
         <div className="p-2 border-t border-border">
           <Button variant="ghost" className="w-full justify-start" onClick={async()=>{await signOut(); nav("/");}}>
@@ -119,6 +127,30 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <main className="flex-1 overflow-auto">
         <div className="md:hidden border-b border-border bg-card p-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
+            <Sheet open={openMenu} onOpenChange={setOpenMenu}>
+              <SheetTrigger asChild>
+                <Button size="icon" variant="ghost" className="h-9 w-9"><Menu className="h-5 w-5"/></Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 p-0 flex flex-col">
+                <div className="p-4 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block w-5 h-5 border-2 border-foreground bg-primary" />
+                    <span className="font-extrabold text-lg uppercase tracking-tight">ObraVisual</span>
+                  </div>
+                  {roleLabel && (
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{roleLabel}</span>
+                  )}
+                </div>
+                <nav className="flex-1 p-2 space-y-1 overflow-auto">
+                  <NavList onClick={() => setOpenMenu(false)} />
+                </nav>
+                <div className="p-2 border-t border-border">
+                  <Button variant="ghost" className="w-full justify-start" onClick={async()=>{await signOut(); nav("/");}}>
+                    <LogOut className="h-4 w-4 mr-2" /> Sair
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
             <span className="inline-block w-4 h-4 border-2 border-foreground bg-primary" />
             <span className="font-bold uppercase tracking-tight">ObraVisual</span>
           </div>
