@@ -420,7 +420,13 @@ export default function ObraDetalhe() {
         {/* VISTA 3D */}
         <TabsContent value="vista3d" className="mt-4">
           <PlanGate feature="vista3d" titulo="Vista 3D isométrica">
-            <Vista3DCasa stage={stage} />
+            <Vista3DCasa
+              stage={stage}
+              obraId={obra.id}
+              photoUrl={obra.foto_projeto_url}
+              canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes((user as any)?.user_metadata?.role || "")}
+              onPhotoChange={() => refresh()}
+            />
           </PlanGate>
         </TabsContent>
 
