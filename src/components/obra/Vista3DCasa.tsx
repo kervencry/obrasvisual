@@ -1,15 +1,58 @@
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { STAGES, type ObraStage } from "@/components/obra/AnimatedHouse";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Camera, Upload, ImageOff, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface Props {
+  stage: ObraStage;
+  obraId?: string;
+  photoUrl?: string | null;
+  canEdit?: boolean;
+  onPhotoChange?: (url: string) => void;
+}
 
 /**
- * Vista isométrica 3D da casa.
- * Renderizada via SVG com perspectiva isométrica (sem libs 3D).
+ * Vista da obra: foto do projeto revelada progressivamente conforme as etapas
+ * avançam + vista isométrica SVG de apoio.
  */
-export default function Vista3DCasa({ stage }: { stage: ObraStage }) {
+export default function Vista3DCasa({ stage, obraId, photoUrl, canEdit, onPhotoChange }: Props) {
   const idx = STAGES.findIndex(s => s.id === stage);
   const show = (i: number) => idx >= i;
   const pct = STAGES[idx]?.percent ?? 0;
+  const [uploading, setUploading] = useState(false);
+  const [localPhoto, setLocalPhoto] = useState<string | null>(photoUrl ?? null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { setLocalPhoto(photoUrl ?? null); }, [photoUrl]);
+
+  async function handleUpload(file: File) {
+    if (!obraId) { toast.error("Obra não identificada"); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `projeto/${obraId}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("fotos-obras").upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("fotos-obras").getPublicUrl(path);
+      const url = pub.publicUrl;
+      const { error: updErr } = await supabase.from("obras").update({ foto_projeto_url: url }).eq("id", obraId);
+      if (updErr) throw updErr;
+      setLocalPhoto(url);
+      onPhotoChange?.(url);
+      toast.success("Foto do projeto atualizada");
+    } catch (e: any) {
+      toast.error(e.message ?? "Erro ao enviar foto");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  // reveal percent: use stage percent, but keep a subtle preview even at 0
+  const revealPct = Math.max(8, pct);
 
   return (
     <Card className="p-4 md:p-8 bg-gradient-to-b from-sky-100 via-sky-50 to-emerald-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 overflow-hidden">
