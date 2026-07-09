@@ -58,7 +58,7 @@ export default function Vista3DCasa({ stage, obraId, photoUrl, canEdit, onPhotoC
     <Card className="p-4 md:p-8 bg-gradient-to-b from-sky-100 via-sky-50 to-emerald-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-bold text-lg">Vista isométrica da obra</h3>
+          <h3 className="font-bold text-lg">Vista da obra</h3>
           <p className="text-xs text-muted-foreground capitalize">Etapa: {stage} — {pct}%</p>
         </div>
         <div className="flex gap-1">
@@ -66,6 +66,78 @@ export default function Vista3DCasa({ stage, obraId, photoUrl, canEdit, onPhotoC
           <span className="w-2 h-2 rounded-full bg-amber-500"/>
           <span className="w-2 h-2 rounded-full bg-rose-500"/>
         </div>
+      </div>
+
+      {/* PROJETO REAL (foto) */}
+      <div className="mb-6">
+        {localPhoto ? (
+          <div className="relative rounded-xl overflow-hidden border border-border shadow-lg bg-black/5">
+            <div className="aspect-[16/10] w-full relative">
+              {/* base: blueprint stylized version (grayscale + reduced) */}
+              <img
+                src={localPhoto}
+                alt="Planta do projeto"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ filter: "grayscale(0.9) contrast(0.75) brightness(0.85) blur(0.4px)", opacity: 0.55 }}
+              />
+              {/* revealed color version (built portion) — reveals from bottom up */}
+              <motion.img
+                src={localPhoto}
+                alt="Projeto construído"
+                className="absolute inset-0 w-full h-full object-cover"
+                initial={false}
+                animate={{ clipPath: `inset(${100 - revealPct}% 0% 0% 0%)` }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+              />
+              {/* construction line indicator */}
+              <motion.div
+                className="absolute left-0 right-0 h-[3px] bg-primary shadow-[0_0_18px_hsl(var(--primary))]"
+                initial={false}
+                animate={{ top: `${100 - revealPct}%` }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+              />
+              {/* progress badge */}
+              <div className="absolute top-3 left-3 bg-background/85 backdrop-blur rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1.5 border border-border">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                {pct}% da obra concluída
+              </div>
+              {canEdit && (
+                <div className="absolute top-3 right-3">
+                  <Button size="sm" variant="secondary" className="h-8" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                    <Camera className="h-3.5 w-3.5 mr-1" />
+                    {uploading ? "Enviando..." : "Trocar foto"}
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="p-3 text-xs text-muted-foreground bg-card/60 border-t border-border">
+              A imagem revela a versão colorida do projeto conforme cada etapa avança — quando a obra for entregue, a foto ficará totalmente colorida.
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl border-2 border-dashed border-border p-8 text-center bg-card/40">
+            <ImageOff className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm font-medium mb-1">Nenhuma foto do projeto ainda</p>
+            <p className="text-xs text-muted-foreground mb-4">
+              {canEdit
+                ? "Envie a renderização do projeto para que a obra 3D fique idêntica a ele conforme as etapas avançam."
+                : "O responsável pela obra ainda não enviou a foto do projeto."}
+            </p>
+            {canEdit && (
+              <Button size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                <Upload className="h-4 w-4 mr-2" />
+                {uploading ? "Enviando..." : "Enviar foto do projeto"}
+              </Button>
+            )}
+          </div>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = ""; }}
+        />
       </div>
 
       <div className="aspect-[4/3] w-full">
