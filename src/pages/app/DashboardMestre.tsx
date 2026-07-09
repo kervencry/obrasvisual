@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { HardHat, Camera, ClipboardList, Wrench } from "lucide-react";
+import VincularObraToken from "@/components/obra/VincularObraToken";
 
 export default function DashboardMestre() {
   const { user } = useAuth();
@@ -58,6 +59,12 @@ export default function DashboardMestre() {
           </Card>
         ))}
       </div>
+
+      <Card className="p-4">
+        <h3 className="font-semibold mb-2">Vincular-se a uma obra por token</h3>
+        <p className="text-xs text-muted-foreground mb-3">Cole o token que o engenheiro enviou para você entrar na obra.</p>
+        <VincularObraToken compact onVinculada={() => window.location.reload()} />
+      </Card>
 
       <Card className="p-4">
         <h3 className="font-semibold mb-3">Obras em andamento</h3>
