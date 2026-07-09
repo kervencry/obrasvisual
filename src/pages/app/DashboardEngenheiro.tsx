@@ -8,6 +8,7 @@ import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, 
 import { Building2, AlertTriangle, DollarSign, Activity } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import VincularObraToken from "@/components/obra/VincularObraToken";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--accent))", "hsl(var(--muted-foreground))", "hsl(var(--destructive))"];
 
@@ -78,6 +79,12 @@ export default function DashboardEngenheiro() {
           </Card>
         ))}
       </div>
+
+      <Card className="p-4">
+        <h3 className="font-semibold mb-2">Vincular a uma obra existente por token</h3>
+        <p className="text-xs text-muted-foreground mb-3">Cole o token que o responsável pela obra compartilhou para entrar na equipe.</p>
+        <VincularObraToken compact onVinculada={() => window.location.reload()} />
+      </Card>
 
       <div className="grid md:grid-cols-2 gap-4">
         <Card className="p-4">

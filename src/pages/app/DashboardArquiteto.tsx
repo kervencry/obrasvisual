@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, CheckCircle2, Clock, Layers } from "lucide-react";
+import VincularObraToken from "@/components/obra/VincularObraToken";
 
 export default function DashboardArquiteto() {
   const { user } = useAuth();
@@ -59,6 +60,12 @@ export default function DashboardArquiteto() {
           </Card>
         ))}
       </div>
+
+      <Card className="p-4">
+        <h3 className="font-semibold mb-2">Entrar em uma obra por token</h3>
+        <p className="text-xs text-muted-foreground mb-3">Cole o token compartilhado pelo engenheiro para vincular seu perfil de arquiteto ao projeto.</p>
+        <VincularObraToken compact onVinculada={() => window.location.reload()} />
+      </Card>
 
       <div className="grid md:grid-cols-2 gap-4">
         <Card className="p-4">

@@ -46,7 +46,7 @@ import { Sparkles, ListTodo, CalendarClock, Package, FolderOpen, Pause, FileSpre
 
 export default function ObraDetalhe() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [obra, setObra] = useState<any>(null);
   const [etapas, setEtapas] = useState<any[]>([]);
   const [fotos, setFotos] = useState<any[]>([]);
@@ -420,7 +420,13 @@ export default function ObraDetalhe() {
         {/* VISTA 3D */}
         <TabsContent value="vista3d" className="mt-4">
           <PlanGate feature="vista3d" titulo="Vista 3D isométrica">
-            <Vista3DCasa stage={stage} />
+            <Vista3DCasa
+              stage={stage}
+              obraId={obra.id}
+              photoUrl={obra.foto_projeto_url}
+              canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")}
+              onPhotoChange={() => refresh()}
+            />
           </PlanGate>
         </TabsContent>
 

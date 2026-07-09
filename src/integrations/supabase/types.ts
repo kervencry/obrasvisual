@@ -464,6 +464,7 @@ export type Database = {
           descricao: string | null
           endereco: string | null
           etapa_atual: Database["public"]["Enums"]["etapa_id"]
+          foto_projeto_url: string | null
           id: string
           latitude: number | null
           longitude: number | null
@@ -484,6 +485,7 @@ export type Database = {
           descricao?: string | null
           endereco?: string | null
           etapa_atual?: Database["public"]["Enums"]["etapa_id"]
+          foto_projeto_url?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
@@ -504,6 +506,7 @@ export type Database = {
           descricao?: string | null
           endereco?: string | null
           etapa_atual?: Database["public"]["Enums"]["etapa_id"]
+          foto_projeto_url?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
