@@ -25,7 +25,7 @@ import {
   ArrowLeft, Upload, Send, CheckCircle2, FileText, DollarSign,
   BookOpen, MessageSquare, Clock, QrCode, Box, ImageIcon,
   ListChecks, Users, Copy, Download, Share2, Settings,
-  ChevronLeft, ChevronRight, X, Trash2, Key
+  ChevronLeft, ChevronRight, X, Trash2, Key, Ruler, GitCompare, Layers
 } from "lucide-react";
 import jsPDF from "jspdf";
 import MembrosObra from "@/components/obra/MembrosObra";
@@ -43,6 +43,48 @@ import ParalisacoesTab from "@/components/obra/ParalisacoesTab";
 import CurvaS from "@/components/obra/CurvaS";
 import { exportarObraXLSX } from "@/lib/exportarObra";
 import { Sparkles, ListTodo, CalendarClock, Package, FolderOpen, Pause, FileSpreadsheet } from "lucide-react";
+
+// ==== Navegação categorizada (substitui a barra horizontal única) ====
+type NavItem = { v: string; label: string; Icon: any };
+function buildNav(isOwner: boolean): { title: string; items: NavItem[] }[] {
+  const base = [
+    { title: "Acompanhamento", items: [
+      { v: "visao", label: "Visão geral", Icon: ListChecks },
+      { v: "etapas", label: "Etapas", Icon: Layers },
+      { v: "timeline", label: "Timeline", Icon: Clock },
+      { v: "vista3d", label: "Vista 3D", Icon: Box },
+      { v: "planta", label: "Planta", Icon: Ruler },
+    ]},
+    { title: "Registros", items: [
+      { v: "fotos", label: "Fotos", Icon: ImageIcon },
+      { v: "antes", label: "Antes / Depois", Icon: GitCompare },
+      { v: "diario", label: "Diário", Icon: BookOpen },
+    ]},
+    { title: "Financeiro", items: [
+      { v: "financeiro", label: "Financeiro", Icon: DollarSign },
+      { v: "orcamentos", label: "Cotações", Icon: Package },
+    ]},
+    { title: "Gestão", items: [
+      { v: "tarefas", label: "Tarefas", Icon: ListTodo },
+      { v: "visitas", label: "Visitas", Icon: CalendarClock },
+      { v: "equipe", label: "Equipe", Icon: Users },
+      { v: "aprov", label: "Aprovações", Icon: CheckCircle2 },
+      { v: "paralisacoes", label: "Paralisações", Icon: Pause },
+    ]},
+    { title: "Comunicação", items: [
+      { v: "chat", label: "Chat", Icon: MessageSquare },
+      { v: "qr", label: "QR / Cliente", Icon: QrCode },
+    ]},
+    { title: "Documentos", items: [
+      { v: "documentos", label: "Documentos", Icon: FolderOpen },
+      { v: "resumo", label: "Resumo IA", Icon: Sparkles },
+      { v: "relatorio", label: "Relatório PDF", Icon: FileText },
+      { v: "exportar", label: "Exportar Excel", Icon: FileSpreadsheet },
+    ]},
+  ];
+  if (isOwner) base.push({ title: "Ajustes", items: [{ v: "config", label: "Configurações", Icon: Settings }] });
+  return base;
+}
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -136,33 +178,43 @@ export default function ObraDetalhe() {
         </div>
       </div>
 
-      <Tabs defaultValue="visao">
-        <div className="overflow-x-auto pb-1">
-          <TabsList className="flex w-max h-auto gap-1">
-            <TabsTrigger value="visao"><ListChecks className="h-4 w-4 mr-1" />Visão geral</TabsTrigger>
-            <TabsTrigger value="etapas">Etapas</TabsTrigger>
-            <TabsTrigger value="fotos"><ImageIcon className="h-4 w-4 mr-1" />Fotos</TabsTrigger>
-            <TabsTrigger value="chat"><MessageSquare className="h-4 w-4 mr-1" />Chat</TabsTrigger>
-            <TabsTrigger value="timeline"><Clock className="h-4 w-4 mr-1" />Timeline</TabsTrigger>
-            <TabsTrigger value="financeiro"><DollarSign className="h-4 w-4 mr-1" />Financeiro</TabsTrigger>
-            <TabsTrigger value="diario"><BookOpen className="h-4 w-4 mr-1" />Diário</TabsTrigger>
-            <TabsTrigger value="gantt">Gantt</TabsTrigger>
-            <TabsTrigger value="vista3d"><Box className="h-4 w-4 mr-1" />Vista 3D</TabsTrigger>
-            <TabsTrigger value="aprov"><CheckCircle2 className="h-4 w-4 mr-1" />Aprovações</TabsTrigger>
-            <TabsTrigger value="antes"><ImageIcon className="h-4 w-4 mr-1" />Antes/depois</TabsTrigger>
-            <TabsTrigger value="qr"><QrCode className="h-4 w-4 mr-1" />QR / Cliente</TabsTrigger>
-            <TabsTrigger value="equipe"><Users className="h-4 w-4 mr-1" />Equipe</TabsTrigger>
-            <TabsTrigger value="tarefas"><ListTodo className="h-4 w-4 mr-1" />Tarefas</TabsTrigger>
-            <TabsTrigger value="visitas"><CalendarClock className="h-4 w-4 mr-1" />Visitas</TabsTrigger>
-            <TabsTrigger value="orcamentos"><Package className="h-4 w-4 mr-1" />Orçamentos</TabsTrigger>
-            <TabsTrigger value="documentos"><FolderOpen className="h-4 w-4 mr-1" />Documentos</TabsTrigger>
-            <TabsTrigger value="paralisacoes"><Pause className="h-4 w-4 mr-1" />Paralisações</TabsTrigger>
-            <TabsTrigger value="resumo"><Sparkles className="h-4 w-4 mr-1" />Resumo IA</TabsTrigger>
-            <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1" />Relatório</TabsTrigger>
-            <TabsTrigger value="exportar"><FileSpreadsheet className="h-4 w-4 mr-1" />Exportar</TabsTrigger>
-            {isOwner && <TabsTrigger value="config"><Settings className="h-4 w-4 mr-1" />Config.</TabsTrigger>}
-          </TabsList>
-        </div>
+      <Tabs defaultValue="visao" orientation="vertical">
+        <div className="grid lg:grid-cols-[240px_1fr] gap-4 lg:gap-6">
+          {/* SIDEBAR NAV — desktop */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-4 space-y-4 max-h-[calc(100vh-2rem)] overflow-y-auto pr-2">
+              {buildNav(isOwner).map(group => (
+                <div key={group.title}>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1 px-2">{group.title}</p>
+                  <TabsList className="flex flex-col h-auto w-full bg-transparent p-0 gap-0.5">
+                    {group.items.map(it => (
+                      <TabsTrigger
+                        key={it.v}
+                        value={it.v}
+                        className="w-full justify-start px-2 py-1.5 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                      >
+                        <it.Icon className="h-4 w-4 mr-2 shrink-0" />
+                        <span className="truncate">{it.label}</span>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          {/* MOBILE NAV — horizontal grouped */}
+          <div className="lg:hidden -mx-4 px-4 overflow-x-auto pb-2">
+            <TabsList className="flex w-max h-auto gap-1">
+              {buildNav(isOwner).flatMap(g => g.items).map(it => (
+                <TabsTrigger key={it.v} value={it.v} className="shrink-0">
+                  <it.Icon className="h-4 w-4 mr-1" />{it.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          <div className="min-w-0">
 
         {/* VISÃO GERAL */}
         <TabsContent value="visao" className="mt-4">
@@ -391,32 +443,6 @@ export default function ObraDetalhe() {
           </Card>
         </TabsContent>
 
-        {/* GANTT */}
-        <TabsContent value="gantt" className="mt-4">
-          <Card className="p-4">
-            <h3 className="font-semibold mb-3">Cronograma</h3>
-            <div className="space-y-2">
-              {etapas.map(e => (
-                <div key={e.id} className="flex items-center gap-3 text-sm">
-                  <span className="w-28 capitalize shrink-0">{e.etapa}</span>
-                  <div className="flex-1 h-6 bg-muted rounded relative overflow-hidden">
-                    <div className={`absolute inset-y-0 left-0 rounded transition-all duration-500 ${
-                      e.status === "concluido" || e.status === "aprovado" ? "bg-primary" :
-                      e.status === "em_andamento" ? "bg-accent" : "bg-muted-foreground/20"
-                    }`} style={{ width: `${e.percentual}%` }} />
-                    <span className="absolute inset-0 flex items-center px-2 text-xs font-medium">
-                      {e.percentual}% — {e.status}
-                    </span>
-                  </div>
-                  <span className="text-xs text-muted-foreground w-24 text-right shrink-0">
-                    {e.data_fim_prevista || "—"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </TabsContent>
-
         {/* VISTA 3D */}
         <TabsContent value="vista3d" className="mt-4">
           <PlanGate feature="vista3d" titulo="Vista 3D isométrica">
@@ -428,6 +454,11 @@ export default function ObraDetalhe() {
               onPhotoChange={() => refresh()}
             />
           </PlanGate>
+        </TabsContent>
+
+        {/* PLANTA DA CONSTRUÇÃO */}
+        <TabsContent value="planta" className="mt-4">
+          <PlantaTab obra={obra} canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")} onChange={refresh} />
         </TabsContent>
 
         {/* APROVAÇÕES */}
@@ -482,6 +513,8 @@ export default function ObraDetalhe() {
             <ConfigTab obra={obra} onUpdate={refresh} />
           </TabsContent>
         )}
+          </div>
+        </div>
       </Tabs>
     </div>
   );
@@ -1150,6 +1183,64 @@ function TarefasKanbanWrapper({ obraId, ownerId, userId }: { obraId: string; own
     })();
   }, [obraId, ownerId]);
   return <TarefasKanban obraId={obraId} userId={userId} membros={membros} />;
+}
+
+// ===== PLANTA DA CONSTRUÇÃO =====
+function PlantaTab({ obra, canEdit, onChange }: { obra: any; canEdit: boolean; onChange: () => void }) {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  async function upload(file: File) {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `planta/${obra.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("fotos-obras").upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("fotos-obras").getPublicUrl(path);
+      const { error: updErr } = await supabase.from("obras").update({ planta_url: pub.publicUrl } as any).eq("id", obra.id);
+      if (updErr) throw updErr;
+      toast.success("Planta enviada.");
+      onChange();
+    } catch (e: any) {
+      toast.error(e.message ?? "Erro ao enviar planta");
+    } finally {
+      setUploading(false);
+    }
+  }
+  const url = (obra as any).planta_url as string | null;
+  return (
+    <Card className="p-4 md:p-6">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div>
+          <h3 className="font-bold text-lg flex items-center gap-2"><Ruler className="h-5 w-5"/>Planta da construção</h3>
+          <p className="text-xs text-muted-foreground">Anexe a planta baixa do projeto — visível para toda a equipe e cliente.</p>
+        </div>
+        {canEdit && (
+          <>
+            <Button size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
+              <Upload className="h-4 w-4 mr-1"/>{uploading ? "Enviando..." : url ? "Trocar planta" : "Enviar planta"}
+            </Button>
+            <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          </>
+        )}
+      </div>
+      {url ? (
+        url.toLowerCase().endsWith(".pdf") ? (
+          <iframe src={url} className="w-full h-[70vh] rounded-lg border border-border" title="Planta"/>
+        ) : (
+          <a href={url} target="_blank" rel="noreferrer" className="block">
+            <img src={url} alt="Planta da construção" className="w-full rounded-lg border border-border hover:opacity-95 transition"/>
+          </a>
+        )
+      ) : (
+        <div className="text-center py-16 border-2 border-dashed border-border rounded-xl">
+          <Ruler className="h-10 w-10 mx-auto text-muted-foreground mb-2"/>
+          <p className="text-sm text-muted-foreground">Nenhuma planta anexada ainda.</p>
+        </div>
+      )}
+    </Card>
+  );
 }
 
 // ===== BOTÃO PDF COM NARRATIVA IA =====

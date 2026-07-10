@@ -471,6 +471,7 @@ export type Database = {
           nome: string
           owner_id: string
           percentual: number
+          planta_url: string | null
           publico_token: string
           status: Database["public"]["Enums"]["obra_status"]
           tipo: Database["public"]["Enums"]["obra_tipo"]
@@ -492,6 +493,7 @@ export type Database = {
           nome: string
           owner_id: string
           percentual?: number
+          planta_url?: string | null
           publico_token?: string
           status?: Database["public"]["Enums"]["obra_status"]
           tipo?: Database["public"]["Enums"]["obra_tipo"]
@@ -513,6 +515,7 @@ export type Database = {
           nome?: string
           owner_id?: string
           percentual?: number
+          planta_url?: string | null
           publico_token?: string
           status?: Database["public"]["Enums"]["obra_status"]
           tipo?: Database["public"]["Enums"]["obra_tipo"]
