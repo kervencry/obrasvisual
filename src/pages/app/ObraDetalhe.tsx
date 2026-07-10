@@ -1185,6 +1185,64 @@ function TarefasKanbanWrapper({ obraId, ownerId, userId }: { obraId: string; own
   return <TarefasKanban obraId={obraId} userId={userId} membros={membros} />;
 }
 
+// ===== PLANTA DA CONSTRUÇÃO =====
+function PlantaTab({ obra, canEdit, onChange }: { obra: any; canEdit: boolean; onChange: () => void }) {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  async function upload(file: File) {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `planta/${obra.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("fotos-obras").upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("fotos-obras").getPublicUrl(path);
+      const { error: updErr } = await supabase.from("obras").update({ planta_url: pub.publicUrl } as any).eq("id", obra.id);
+      if (updErr) throw updErr;
+      toast.success("Planta enviada.");
+      onChange();
+    } catch (e: any) {
+      toast.error(e.message ?? "Erro ao enviar planta");
+    } finally {
+      setUploading(false);
+    }
+  }
+  const url = (obra as any).planta_url as string | null;
+  return (
+    <Card className="p-4 md:p-6">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div>
+          <h3 className="font-bold text-lg flex items-center gap-2"><Ruler className="h-5 w-5"/>Planta da construção</h3>
+          <p className="text-xs text-muted-foreground">Anexe a planta baixa do projeto — visível para toda a equipe e cliente.</p>
+        </div>
+        {canEdit && (
+          <>
+            <Button size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
+              <Upload className="h-4 w-4 mr-1"/>{uploading ? "Enviando..." : url ? "Trocar planta" : "Enviar planta"}
+            </Button>
+            <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          </>
+        )}
+      </div>
+      {url ? (
+        url.toLowerCase().endsWith(".pdf") ? (
+          <iframe src={url} className="w-full h-[70vh] rounded-lg border border-border" title="Planta"/>
+        ) : (
+          <a href={url} target="_blank" rel="noreferrer" className="block">
+            <img src={url} alt="Planta da construção" className="w-full rounded-lg border border-border hover:opacity-95 transition"/>
+          </a>
+        )
+      ) : (
+        <div className="text-center py-16 border-2 border-dashed border-border rounded-xl">
+          <Ruler className="h-10 w-10 mx-auto text-muted-foreground mb-2"/>
+          <p className="text-sm text-muted-foreground">Nenhuma planta anexada ainda.</p>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 // ===== BOTÃO PDF COM NARRATIVA IA =====
 function PdfButton({ obra, etapas, fin, fotos }: any) {
   const [loading, setLoading] = useState(false);
