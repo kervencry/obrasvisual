@@ -178,33 +178,43 @@ export default function ObraDetalhe() {
         </div>
       </div>
 
-      <Tabs defaultValue="visao">
-        <div className="overflow-x-auto pb-1">
-          <TabsList className="flex w-max h-auto gap-1">
-            <TabsTrigger value="visao"><ListChecks className="h-4 w-4 mr-1" />Visão geral</TabsTrigger>
-            <TabsTrigger value="etapas">Etapas</TabsTrigger>
-            <TabsTrigger value="fotos"><ImageIcon className="h-4 w-4 mr-1" />Fotos</TabsTrigger>
-            <TabsTrigger value="chat"><MessageSquare className="h-4 w-4 mr-1" />Chat</TabsTrigger>
-            <TabsTrigger value="timeline"><Clock className="h-4 w-4 mr-1" />Timeline</TabsTrigger>
-            <TabsTrigger value="financeiro"><DollarSign className="h-4 w-4 mr-1" />Financeiro</TabsTrigger>
-            <TabsTrigger value="diario"><BookOpen className="h-4 w-4 mr-1" />Diário</TabsTrigger>
-            <TabsTrigger value="gantt">Gantt</TabsTrigger>
-            <TabsTrigger value="vista3d"><Box className="h-4 w-4 mr-1" />Vista 3D</TabsTrigger>
-            <TabsTrigger value="aprov"><CheckCircle2 className="h-4 w-4 mr-1" />Aprovações</TabsTrigger>
-            <TabsTrigger value="antes"><ImageIcon className="h-4 w-4 mr-1" />Antes/depois</TabsTrigger>
-            <TabsTrigger value="qr"><QrCode className="h-4 w-4 mr-1" />QR / Cliente</TabsTrigger>
-            <TabsTrigger value="equipe"><Users className="h-4 w-4 mr-1" />Equipe</TabsTrigger>
-            <TabsTrigger value="tarefas"><ListTodo className="h-4 w-4 mr-1" />Tarefas</TabsTrigger>
-            <TabsTrigger value="visitas"><CalendarClock className="h-4 w-4 mr-1" />Visitas</TabsTrigger>
-            <TabsTrigger value="orcamentos"><Package className="h-4 w-4 mr-1" />Orçamentos</TabsTrigger>
-            <TabsTrigger value="documentos"><FolderOpen className="h-4 w-4 mr-1" />Documentos</TabsTrigger>
-            <TabsTrigger value="paralisacoes"><Pause className="h-4 w-4 mr-1" />Paralisações</TabsTrigger>
-            <TabsTrigger value="resumo"><Sparkles className="h-4 w-4 mr-1" />Resumo IA</TabsTrigger>
-            <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1" />Relatório</TabsTrigger>
-            <TabsTrigger value="exportar"><FileSpreadsheet className="h-4 w-4 mr-1" />Exportar</TabsTrigger>
-            {isOwner && <TabsTrigger value="config"><Settings className="h-4 w-4 mr-1" />Config.</TabsTrigger>}
-          </TabsList>
-        </div>
+      <Tabs defaultValue="visao" orientation="vertical">
+        <div className="grid lg:grid-cols-[240px_1fr] gap-4 lg:gap-6">
+          {/* SIDEBAR NAV — desktop */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-4 space-y-4 max-h-[calc(100vh-2rem)] overflow-y-auto pr-2">
+              {buildNav(isOwner).map(group => (
+                <div key={group.title}>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1 px-2">{group.title}</p>
+                  <TabsList className="flex flex-col h-auto w-full bg-transparent p-0 gap-0.5">
+                    {group.items.map(it => (
+                      <TabsTrigger
+                        key={it.v}
+                        value={it.v}
+                        className="w-full justify-start px-2 py-1.5 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                      >
+                        <it.Icon className="h-4 w-4 mr-2 shrink-0" />
+                        <span className="truncate">{it.label}</span>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          {/* MOBILE NAV — horizontal grouped */}
+          <div className="lg:hidden -mx-4 px-4 overflow-x-auto pb-2">
+            <TabsList className="flex w-max h-auto gap-1">
+              {buildNav(isOwner).flatMap(g => g.items).map(it => (
+                <TabsTrigger key={it.v} value={it.v} className="shrink-0">
+                  <it.Icon className="h-4 w-4 mr-1" />{it.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          <div className="min-w-0">
 
         {/* VISÃO GERAL */}
         <TabsContent value="visao" className="mt-4">
