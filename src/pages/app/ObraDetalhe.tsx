@@ -443,32 +443,6 @@ export default function ObraDetalhe() {
           </Card>
         </TabsContent>
 
-        {/* GANTT */}
-        <TabsContent value="gantt" className="mt-4">
-          <Card className="p-4">
-            <h3 className="font-semibold mb-3">Cronograma</h3>
-            <div className="space-y-2">
-              {etapas.map(e => (
-                <div key={e.id} className="flex items-center gap-3 text-sm">
-                  <span className="w-28 capitalize shrink-0">{e.etapa}</span>
-                  <div className="flex-1 h-6 bg-muted rounded relative overflow-hidden">
-                    <div className={`absolute inset-y-0 left-0 rounded transition-all duration-500 ${
-                      e.status === "concluido" || e.status === "aprovado" ? "bg-primary" :
-                      e.status === "em_andamento" ? "bg-accent" : "bg-muted-foreground/20"
-                    }`} style={{ width: `${e.percentual}%` }} />
-                    <span className="absolute inset-0 flex items-center px-2 text-xs font-medium">
-                      {e.percentual}% — {e.status}
-                    </span>
-                  </div>
-                  <span className="text-xs text-muted-foreground w-24 text-right shrink-0">
-                    {e.data_fim_prevista || "—"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </TabsContent>
-
         {/* VISTA 3D */}
         <TabsContent value="vista3d" className="mt-4">
           <PlanGate feature="vista3d" titulo="Vista 3D isométrica">
@@ -480,6 +454,11 @@ export default function ObraDetalhe() {
               onPhotoChange={() => refresh()}
             />
           </PlanGate>
+        </TabsContent>
+
+        {/* PLANTA DA CONSTRUÇÃO */}
+        <TabsContent value="planta" className="mt-4">
+          <PlantaTab obra={obra} canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")} onChange={refresh} />
         </TabsContent>
 
         {/* APROVAÇÕES */}
