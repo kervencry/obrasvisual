@@ -25,7 +25,7 @@ import {
   ArrowLeft, Upload, Send, CheckCircle2, FileText, DollarSign,
   BookOpen, MessageSquare, Clock, QrCode, Box, ImageIcon,
   ListChecks, Users, Copy, Download, Share2, Settings,
-  ChevronLeft, ChevronRight, X, Trash2, Key
+  ChevronLeft, ChevronRight, X, Trash2, Key, Ruler, GitCompare, Layers
 } from "lucide-react";
 import jsPDF from "jspdf";
 import MembrosObra from "@/components/obra/MembrosObra";
@@ -43,6 +43,48 @@ import ParalisacoesTab from "@/components/obra/ParalisacoesTab";
 import CurvaS from "@/components/obra/CurvaS";
 import { exportarObraXLSX } from "@/lib/exportarObra";
 import { Sparkles, ListTodo, CalendarClock, Package, FolderOpen, Pause, FileSpreadsheet } from "lucide-react";
+
+// ==== Navegação categorizada (substitui a barra horizontal única) ====
+type NavItem = { v: string; label: string; Icon: any };
+function buildNav(isOwner: boolean): { title: string; items: NavItem[] }[] {
+  const base = [
+    { title: "Acompanhamento", items: [
+      { v: "visao", label: "Visão geral", Icon: ListChecks },
+      { v: "etapas", label: "Etapas", Icon: Layers },
+      { v: "timeline", label: "Timeline", Icon: Clock },
+      { v: "vista3d", label: "Vista 3D", Icon: Box },
+      { v: "planta", label: "Planta", Icon: Ruler },
+    ]},
+    { title: "Registros", items: [
+      { v: "fotos", label: "Fotos", Icon: ImageIcon },
+      { v: "antes", label: "Antes / Depois", Icon: GitCompare },
+      { v: "diario", label: "Diário", Icon: BookOpen },
+    ]},
+    { title: "Financeiro", items: [
+      { v: "financeiro", label: "Financeiro", Icon: DollarSign },
+      { v: "orcamentos", label: "Cotações", Icon: Package },
+    ]},
+    { title: "Gestão", items: [
+      { v: "tarefas", label: "Tarefas", Icon: ListTodo },
+      { v: "visitas", label: "Visitas", Icon: CalendarClock },
+      { v: "equipe", label: "Equipe", Icon: Users },
+      { v: "aprov", label: "Aprovações", Icon: CheckCircle2 },
+      { v: "paralisacoes", label: "Paralisações", Icon: Pause },
+    ]},
+    { title: "Comunicação", items: [
+      { v: "chat", label: "Chat", Icon: MessageSquare },
+      { v: "qr", label: "QR / Cliente", Icon: QrCode },
+    ]},
+    { title: "Documentos", items: [
+      { v: "documentos", label: "Documentos", Icon: FolderOpen },
+      { v: "resumo", label: "Resumo IA", Icon: Sparkles },
+      { v: "relatorio", label: "Relatório PDF", Icon: FileText },
+      { v: "exportar", label: "Exportar Excel", Icon: FileSpreadsheet },
+    ]},
+  ];
+  if (isOwner) base.push({ title: "Ajustes", items: [{ v: "config", label: "Configurações", Icon: Settings }] });
+  return base;
+}
 
 export default function ObraDetalhe() {
   const { id } = useParams();
