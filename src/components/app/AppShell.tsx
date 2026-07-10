@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   HardHat, LayoutDashboard, Plus, User, Bell, LogOut, Image, Building2,
   Crown, MessageSquare, FileText, ClipboardList, Users, Shield, Layers,
-  Camera, GalleryHorizontal, Menu,
+  Camera, GalleryHorizontal, Menu, Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROLE_LABEL, type Role } from "@/lib/rbac";
@@ -39,6 +39,7 @@ function buildLinks(role: Role | null, naoLidas: number): LinkItem[] {
       { to: "/app/engenheiro", icon: LayoutDashboard, label: "Dashboard", end: true },
       { to: "/app", icon: Building2, label: "Obras", end: true },
       { to: "/app/obras/nova", icon: Plus, label: "Nova obra" },
+      { to: "/app/ferramentas", icon: Wrench, label: "Ferramentas" },
       { to: "/app/portfolio", icon: Image, label: "Portfólio" },
       { to: "/app/planos", icon: Crown, label: "Planos" },
       notif, perfil,
@@ -48,6 +49,7 @@ function buildLinks(role: Role | null, naoLidas: number): LinkItem[] {
     return [
       { to: "/app/arquiteto", icon: LayoutDashboard, label: "Dashboard", end: true },
       { to: "/app", icon: Layers, label: "Projetos", end: true },
+      { to: "/app/ferramentas", icon: Wrench, label: "Ferramentas" },
       { to: "/app/portfolio", icon: GalleryHorizontal, label: "Portfólio" },
       notif, perfil,
     ];
@@ -57,6 +59,7 @@ function buildLinks(role: Role | null, naoLidas: number): LinkItem[] {
       { to: "/app/mestre", icon: LayoutDashboard, label: "Dashboard", end: true },
       { to: "/app", icon: HardHat, label: "Obras", end: true },
       { to: "/app/obras/nova", icon: Plus, label: "Nova obra" },
+      { to: "/app/ferramentas", icon: Wrench, label: "Ferramentas" },
       notif, perfil,
     ];
   }
