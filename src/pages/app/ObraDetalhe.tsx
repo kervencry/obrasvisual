@@ -534,6 +534,8 @@ export default function ObraDetalhe() {
             <ConfigTab obra={obra} onUpdate={refresh} />
           </TabsContent>
         )}
+          </div>
+        </div>
       </Tabs>
     </div>
   );
