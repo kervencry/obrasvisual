@@ -28,6 +28,7 @@ import AdminUsuarios from "./pages/app/AdminUsuarios";
 import AdminObras from "./pages/app/AdminObras";
 import PortfolioPublico from "./pages/PortfolioPublico";
 import ObraPublica from "./pages/ObraPublica";
+import UnidadePublica from "./pages/UnidadePublica";
 import RoleRoute, { RoleRedirect } from "./components/auth/RoleRoute";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/demo" element={<ObraDashboard />} />
               <Route path="/obra/:id" element={<ObraDashboard />} />
               <Route path="/obra-publica/:id" element={<ObraPublica />} />
+              <Route path="/unidade/:id" element={<UnidadePublica />} />
               <Route path="/portfolio/:userId" element={<PortfolioPublico />} />
               <Route path="/app" element={<AppShell><Obras /></AppShell>} />
               <Route path="/app/home" element={<RoleRedirect />} />
