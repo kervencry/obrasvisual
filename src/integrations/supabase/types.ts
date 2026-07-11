@@ -429,6 +429,7 @@ export type Database = {
           id: string
           obra_id: string
           papel: Database["public"]["Enums"]["app_role"]
+          unidade_id: string | null
           user_id: string
         }
         Insert: {
@@ -436,6 +437,7 @@ export type Database = {
           id?: string
           obra_id: string
           papel: Database["public"]["Enums"]["app_role"]
+          unidade_id?: string | null
           user_id: string
         }
         Update: {
@@ -443,6 +445,7 @@ export type Database = {
           id?: string
           obra_id?: string
           papel?: Database["public"]["Enums"]["app_role"]
+          unidade_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -451,6 +454,13 @@ export type Database = {
             columns: ["obra_id"]
             isOneToOne: false
             referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obra_members_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
             referencedColumns: ["id"]
           },
         ]
@@ -474,6 +484,7 @@ export type Database = {
           planta_url: string | null
           publico_token: string
           status: Database["public"]["Enums"]["obra_status"]
+          tem_unidades: boolean
           tipo: Database["public"]["Enums"]["obra_tipo"]
           updated_at: string
           valor_previsto: number | null
@@ -496,6 +507,7 @@ export type Database = {
           planta_url?: string | null
           publico_token?: string
           status?: Database["public"]["Enums"]["obra_status"]
+          tem_unidades?: boolean
           tipo?: Database["public"]["Enums"]["obra_tipo"]
           updated_at?: string
           valor_previsto?: number | null
@@ -518,6 +530,7 @@ export type Database = {
           planta_url?: string | null
           publico_token?: string
           status?: Database["public"]["Enums"]["obra_status"]
+          tem_unidades?: boolean
           tipo?: Database["public"]["Enums"]["obra_tipo"]
           updated_at?: string
           valor_previsto?: number | null
@@ -830,6 +843,103 @@ export type Database = {
           },
         ]
       }
+      unidade_etapas: {
+        Row: {
+          concluida: boolean
+          data_conclusao: string | null
+          etapa: string
+          id: string
+          ordem: number
+          percentual: number
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          concluida?: boolean
+          data_conclusao?: string | null
+          etapa: string
+          id?: string
+          ordem: number
+          percentual: number
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          concluida?: boolean
+          data_conclusao?: string | null
+          etapa?: string
+          id?: string
+          ordem?: number
+          percentual?: number
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unidade_etapas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unidades: {
+        Row: {
+          concluida: boolean
+          created_at: string
+          etapa_atual: string
+          id: string
+          identificador: string | null
+          nome: string
+          obra_id: string
+          observacoes: string | null
+          ordem: number
+          percentual: number
+          publico_token: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          concluida?: boolean
+          created_at?: string
+          etapa_atual?: string
+          id?: string
+          identificador?: string | null
+          nome: string
+          obra_id: string
+          observacoes?: string | null
+          ordem?: number
+          percentual?: number
+          publico_token?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          concluida?: boolean
+          created_at?: string
+          etapa_atual?: string
+          id?: string
+          identificador?: string | null
+          nome?: string
+          obra_id?: string
+          observacoes?: string | null
+          ordem?: number
+          percentual?: number
+          publico_token?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unidades_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -911,6 +1021,10 @@ export type Database = {
         }[]
       }
       get_obra_publica: { Args: { _id: string; _token: string }; Returns: Json }
+      get_unidade_publica: {
+        Args: { _id: string; _token: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -931,6 +1045,7 @@ export type Database = {
         Returns: boolean
       }
       vincular_obra_por_token: { Args: { _token: string }; Returns: Json }
+      vincular_unidade_por_token: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
       app_role:

@@ -18,20 +18,23 @@ export default function VincularObraToken({ onVinculada, compact }: Props) {
     const t = token.trim();
     if (!t) { toast.error("Digite o token da obra"); return; }
     setLoading(true);
-    const { data, error } = await (supabase.rpc as any)("vincular_obra_por_token", { _token: t });
+    // 1) tenta como token de obra
+    const { data: obraData, error: obraErr } = await (supabase.rpc as any)("vincular_obra_por_token", { _token: t });
+    if (!obraErr && obraData) {
+      setLoading(false);
+      toast.success(`Obra vinculada: ${obraData.nome}`);
+      setToken("");
+      onVinculada?.(obraData);
+      return;
+    }
+    // 2) tenta como token de unidade
+    const { data: uniData, error: uniErr } = await (supabase.rpc as any)("vincular_unidade_por_token", { _token: t });
     setLoading(false);
-
-    if (error) {
-      toast.error("Não foi possível vincular a obra. Tente novamente.");
-      return;
-    }
-    if (!data) {
-      toast.error("Token inválido. Verifique com seu engenheiro.");
-      return;
-    }
-    toast.success(`Obra vinculada: ${data.nome}`);
+    if (uniErr) { toast.error("Não foi possível vincular. Tente novamente."); return; }
+    if (!uniData) { toast.error("Token inválido. Verifique com seu engenheiro."); return; }
+    toast.success(`Unidade vinculada: ${uniData.unidade_nome}`);
     setToken("");
-    onVinculada?.(data);
+    onVinculada?.({ id: uniData.obra_id, nome: uniData.obra_nome, unidade: uniData });
   }
 
   return (

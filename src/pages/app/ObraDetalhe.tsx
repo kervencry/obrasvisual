@@ -41,8 +41,9 @@ import OrcamentosTab from "@/components/obra/OrcamentosTab";
 import DocumentosTab from "@/components/obra/DocumentosTab";
 import ParalisacoesTab from "@/components/obra/ParalisacoesTab";
 import CurvaS from "@/components/obra/CurvaS";
+import UnidadesTab from "@/components/obra/UnidadesTab";
 import { exportarObraXLSX } from "@/lib/exportarObra";
-import { Sparkles, ListTodo, CalendarClock, Package, FolderOpen, Pause, FileSpreadsheet } from "lucide-react";
+import { Sparkles, ListTodo, CalendarClock, Package, FolderOpen, Pause, FileSpreadsheet, Building2 } from "lucide-react";
 
 // ==== Navegação categorizada (substitui a barra horizontal única) ====
 type NavItem = { v: string; label: string; Icon: any };
@@ -51,6 +52,7 @@ function buildNav(isOwner: boolean): { title: string; items: NavItem[] }[] {
     { title: "Acompanhamento", items: [
       { v: "visao", label: "Visão geral", Icon: ListChecks },
       { v: "etapas", label: "Etapas", Icon: Layers },
+      { v: "unidades", label: "Unidades", Icon: Building2 },
       { v: "timeline", label: "Timeline", Icon: Clock },
       { v: "vista3d", label: "Vista 3D", Icon: Box },
       { v: "planta", label: "Planta", Icon: Ruler },
@@ -459,6 +461,14 @@ export default function ObraDetalhe() {
         {/* PLANTA DA CONSTRUÇÃO */}
         <TabsContent value="planta" className="mt-4">
           <PlantaTab obra={obra} canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")} onChange={refresh} />
+        </TabsContent>
+
+        {/* UNIDADES (prédio/condomínio) */}
+        <TabsContent value="unidades" className="mt-4">
+          <UnidadesTab
+            obraId={obra.id}
+            canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")}
+          />
         </TabsContent>
 
         {/* APROVAÇÕES */}
