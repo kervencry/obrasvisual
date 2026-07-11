@@ -14,27 +14,36 @@ import VincularObraToken from "@/components/obra/VincularObraToken";
 export default function DashboardCliente() {
   const { user } = useAuth();
   const [obras, setObras] = useState<any[]>([]);
+  const [unidades, setUnidades] = useState<any[]>([]);
   const [naoLidas, setNaoLidas] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   function handleVinculada(obra: any) {
-    setObras(prev => prev.some(o => o.id === obra.id) ? prev : [...prev, obra]);
+    // se veio de token de unidade, recarrega tudo
+    if (obra?.unidade) { load(); }
+    else setObras(prev => prev.some(o => o.id === obra.id) ? prev : [...prev, obra]);
     setDialogOpen(false);
   }
 
-  useEffect(() => {
+  async function load() {
     if (!user) return;
-    (async () => {
-      const { data: mem } = await supabase.from("obra_members").select("obra_id").eq("user_id", user.id).eq("papel", "cliente");
-      const ids = (mem ?? []).map((m: any) => m.obra_id);
-      if (ids.length) {
-        const { data: o } = await supabase.from("obras").select("*").in("id", ids);
-        setObras(o ?? []);
-      }
-      const { count } = await supabase.from("notificacoes").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("lida", false);
-      setNaoLidas(count ?? 0);
-    })();
-  }, [user]);
+    const { data: mem } = await supabase.from("obra_members")
+      .select("obra_id, unidade_id").eq("user_id", user.id).eq("papel", "cliente");
+    const rows = mem ?? [];
+    const ids = rows.map((m: any) => m.obra_id);
+    if (ids.length) {
+      const { data: o } = await supabase.from("obras").select("*").in("id", ids);
+      setObras(o ?? []);
+      const unidIds = rows.filter((m:any)=>m.unidade_id).map((m:any)=>m.unidade_id);
+      if (unidIds.length) {
+        const { data: u } = await supabase.from("unidades").select("*").in("id", unidIds);
+        setUnidades(u ?? []);
+      } else setUnidades([]);
+    } else { setObras([]); setUnidades([]); }
+    const { count } = await supabase.from("notificacoes").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("lida", false);
+    setNaoLidas(count ?? 0);
+  }
+  useEffect(() => { load(); }, [user]);
 
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
@@ -65,13 +74,46 @@ export default function DashboardCliente() {
         </div>
       </div>
 
-      {obras.length === 0 ? (
+      {obras.length === 0 && unidades.length === 0 ? (
         <Card className="p-8 md:p-12 max-w-xl mx-auto">
           <VincularObraToken onVinculada={handleVinculada} />
         </Card>
       ) : (
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="space-y-6">
+          {unidades.length > 0 && (
+            <div>
+              <h2 className="font-bold mb-2 text-sm uppercase tracking-widest text-muted-foreground">Minhas unidades</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                {unidades.map(u => {
+                  const obra = obras.find(o => o.id === u.obra_id);
+                  return (
+                    <Card key={u.id} className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground">{obra?.nome ?? "Obra"}</p>
+                          <h3 className="font-bold text-lg">{u.nome}</h3>
+                          {u.identificador && <p className="text-xs text-muted-foreground">{u.identificador}</p>}
+                        </div>
+                        <Badge variant={u.concluida ? "default" : "outline"}>{u.concluida ? "Concluída" : `${u.percentual}%`}</Badge>
+                      </div>
+                      <div className="mt-3">
+                        <div className="flex justify-between text-xs mb-1"><span className="capitalize">Etapa: {u.etapa_atual}</span><span className="font-bold">{u.percentual}%</span></div>
+                        <Progress value={u.percentual} className="h-2"/>
+                      </div>
+                      <div className="flex justify-end mt-4">
+                        <Link to={`/unidade/${u.id}?t=${u.publico_token}`} target="_blank"><Button size="sm">Ver detalhes</Button></Link>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {obras.filter(o => !unidades.some(u => u.obra_id === o.id)).length > 0 && (
+          <div className="grid md:grid-cols-2 gap-4">
           {obras.map(o => (
+            unidades.some(u => u.obra_id === o.id) ? null :
             <Card key={o.id} className="p-4">
               <div className="flex items-start justify-between mb-3">
                 <div>
@@ -91,6 +133,8 @@ export default function DashboardCliente() {
               </div>
             </Card>
           ))}
+          </div>
+          )}
         </div>
       )}
     </div>
