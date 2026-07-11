@@ -463,6 +463,14 @@ export default function ObraDetalhe() {
           <PlantaTab obra={obra} canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")} onChange={refresh} />
         </TabsContent>
 
+        {/* UNIDADES (prédio/condomínio) */}
+        <TabsContent value="unidades" className="mt-4">
+          <UnidadesTab
+            obraId={obra.id}
+            canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")}
+          />
+        </TabsContent>
+
         {/* APROVAÇÕES */}
         <TabsContent value="aprov" className="mt-4">
           <PlanGate feature="aprovacaoDigital" titulo="Aprovação digital">
