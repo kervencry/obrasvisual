@@ -438,6 +438,18 @@ export default function ObraDetalhe() {
           <ParalisacoesTab obraId={obra.id} userId={user?.id ?? ""} isEditor={isOwner} />
         </TabsContent>
 
+        <TabsContent value="seguranca" className="mt-4">
+          <SegurancaTab obraId={obra.id} userId={user?.id} canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")} />
+        </TabsContent>
+
+        <TabsContent value="ponto" className="mt-4">
+          <PontoTab obraId={obra.id} userId={user?.id} canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")} />
+        </TabsContent>
+
+        <TabsContent value="alertas" className="mt-4">
+          <AlertasTab obraId={obra.id} />
+        </TabsContent>
+
         <TabsContent value="exportar" className="mt-4">
           <Card className="p-6 text-center">
             <FileSpreadsheet className="h-12 w-12 mx-auto text-primary mb-3" />
