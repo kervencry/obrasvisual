@@ -675,6 +675,59 @@ export type Database = {
           },
         ]
       }
+      ponto_registros: {
+        Row: {
+          colaborador: string
+          created_at: string
+          data: string
+          entrada: string | null
+          funcao: string | null
+          horas: number | null
+          id: string
+          obra_id: string
+          observacao: string | null
+          saida: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          colaborador: string
+          created_at?: string
+          data?: string
+          entrada?: string | null
+          funcao?: string | null
+          horas?: number | null
+          id?: string
+          obra_id: string
+          observacao?: string | null
+          saida?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          colaborador?: string
+          created_at?: string
+          data?: string
+          entrada?: string | null
+          funcao?: string | null
+          horas?: number | null
+          id?: string
+          obra_id?: string
+          observacao?: string | null
+          saida?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ponto_registros_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -745,6 +798,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "resumos_semanais_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seguranca_registros: {
+        Row: {
+          created_at: string
+          data: string
+          descricao: string | null
+          foto_url: string | null
+          id: string
+          item: string
+          obra_id: string
+          status: string
+          tipo: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          foto_url?: string | null
+          id?: string
+          item: string
+          obra_id: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          foto_url?: string | null
+          id?: string
+          item?: string
+          obra_id?: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seguranca_registros_obra_id_fkey"
             columns: ["obra_id"]
             isOneToOne: false
             referencedRelation: "obras"
