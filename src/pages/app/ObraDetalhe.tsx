@@ -915,6 +915,35 @@ function DiarioTab({ obraId, diario, userId, onChange }: any) {
     const matchData = !filtroData || d.data === filtroData;
     return matchBusca && matchData;
   });
+  function imprimirDiario() {
+    if (filtrados.length === 0) { toast.error("Nenhum registro para imprimir"); return; }
+    const doc = new jsPDF();
+    doc.setFontSize(18); doc.text("Diário da obra", 14, 18);
+    doc.setFontSize(9); doc.setTextColor(120);
+    doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")} · ${filtrados.length} registros`, 14, 24);
+    doc.setTextColor(0);
+    let y = 34;
+    filtrados.forEach((d: any) => {
+      if (y > 275) { doc.addPage(); y = 20; }
+      doc.setFontSize(11); doc.setFont(undefined, "bold");
+      doc.text(`${format(new Date(d.data), "dd/MM/yyyy")} — ${d.titulo || "Sem título"}`, 14, y);
+      y += 6; doc.setFont(undefined, "normal"); doc.setFontSize(10);
+      const lines = doc.splitTextToSize(d.conteudo || "", 180);
+      lines.forEach((l: string) => {
+        if (y > 285) { doc.addPage(); y = 20; }
+        doc.text(l, 14, y); y += 5;
+      });
+      if (d.clima || d.trabalhadores) {
+        doc.setFontSize(8); doc.setTextColor(120);
+        doc.text(`${d.clima ? "Clima: " + d.clima : ""}${d.trabalhadores ? "  ·  " + d.trabalhadores + " trab." : ""}`, 14, y);
+        doc.setTextColor(0); doc.setFontSize(10);
+        y += 5;
+      }
+      y += 4;
+    });
+    doc.save(`diario-obra.pdf`);
+    toast.success("PDF do diário gerado");
+  }
   // agrupar por mês
   const grupos: Record<string, any[]> = {};
   filtrados.forEach((d: any) => {
@@ -942,6 +971,9 @@ function DiarioTab({ obraId, diario, userId, onChange }: any) {
           {(busca || filtroData) && (
             <Button variant="ghost" size="sm" onClick={() => { setBusca(""); setFiltroData(""); }}>Limpar</Button>
           )}
+          <Button variant="outline" size="sm" onClick={imprimirDiario}>
+            <Printer className="h-4 w-4 mr-1" />Imprimir PDF
+          </Button>
           <span className="text-xs text-muted-foreground ml-auto">
             {filtrados.length} de {diario.length} registros
           </span>
