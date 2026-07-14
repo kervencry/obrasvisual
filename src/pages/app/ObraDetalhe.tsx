@@ -1302,3 +1302,33 @@ function PdfButton({ obra, etapas, fin, fotos }: any) {
     </Button>
   );
 }
+
+// ===== KPIs VISÃO GERAL =====
+function KpisObra({ obra, fotos, diario, msgs, gastos, tarefasStats }: any) {
+  const dias = obra.data_inicio
+    ? Math.max(0, Math.round((Date.now() - +new Date(obra.data_inicio)) / (1000 * 60 * 60 * 24)))
+    : 0;
+  const pctTarefas = tarefasStats.total ? Math.round((tarefasStats.concluidas / tarefasStats.total) * 100) : 0;
+  const cards = [
+    { Icon: CalendarDays, label: "Dias em obra", value: dias, hint: obra.data_inicio ? `desde ${format(new Date(obra.data_inicio), "dd/MM/yy")}` : "sem data" },
+    { Icon: ImageIcon, label: "Fotos", value: fotos.length, hint: `${fotos.filter((f:any)=>Date.now()-+new Date(f.created_at)<7*86400000).length} na semana` },
+    { Icon: BookOpen, label: "Diário", value: diario.length, hint: "registros" },
+    { Icon: ListTodo, label: "Tarefas", value: `${tarefasStats.concluidas}/${tarefasStats.total}`, hint: `${pctTarefas}% concluídas` },
+    { Icon: MessageSquare, label: "Mensagens", value: msgs.length, hint: "no chat" },
+    { Icon: TrendingUp, label: "Gasto", value: `R$ ${(gastos/1000).toFixed(1)}k`, hint: obra.valor_previsto ? `de R$ ${(Number(obra.valor_previsto)/1000).toFixed(0)}k` : "sem previsão" },
+  ];
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
+      {cards.map(c => (
+        <Card key={c.label} className="p-3">
+          <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+            <c.Icon className="h-3.5 w-3.5" />
+            <span className="text-[10px] uppercase tracking-wide font-semibold">{c.label}</span>
+          </div>
+          <p className="text-xl font-extrabold leading-none">{c.value}</p>
+          <p className="text-[10px] text-muted-foreground mt-1 truncate">{c.hint}</p>
+        </Card>
+      ))}
+    </div>
+  );
+}
