@@ -27,6 +27,7 @@ import {
   ListChecks, Users, Copy, Download, Share2, Settings,
   ChevronLeft, ChevronRight, X, Trash2, Key, Ruler, GitCompare, Layers
 } from "lucide-react";
+import { Play, Pause as PauseIcon, Printer, Columns2, TrendingUp, CalendarDays } from "lucide-react";
 import jsPDF from "jspdf";
 import MembrosObra from "@/components/obra/MembrosObra";
 import { notificar, notificarMembros } from "@/lib/notificar";
@@ -108,6 +109,7 @@ export default function ObraDetalhe() {
   const [stage, setStage] = useState<ObraStage>("terreno");
   const [checklistEtapa, setChecklistEtapa] = useState<any>(null);
   const [paralisacaoAtiva, setParalisacaoAtiva] = useState(false);
+  const [tarefasStats, setTarefasStats] = useState({ total: 0, concluidas: 0 });
 
   async function refresh() {
     if (!id) return;
@@ -127,6 +129,9 @@ export default function ObraDetalhe() {
     if (o.data) setStage(o.data.etapa_atual);
     const { data: par } = await supabase.from("paralisacoes_obra").select("id").eq("obra_id", id).is("data_fim", null).limit(1);
     setParalisacaoAtiva((par ?? []).length > 0);
+    const { data: tarefas } = await (supabase as any).from("tarefas_obra").select("status").eq("obra_id", id);
+    const ts = (tarefas ?? []) as any[];
+    setTarefasStats({ total: ts.length, concluidas: ts.filter(t => t.status === "concluida").length });
   }
 
   useEffect(() => { refresh(); }, [id]);
@@ -229,6 +234,7 @@ export default function ObraDetalhe() {
           <div className="mb-4">
             <AlertaRiscoChuva lat={obra.latitude} lon={obra.longitude} etapas={etapas} />
           </div>
+          <KpisObra obra={obra} fotos={fotos} diario={diario} msgs={msgs} gastos={gastos} tarefasStats={tarefasStats} />
           <div className="grid lg:grid-cols-3 gap-4">
             <Card className="p-4 lg:col-span-2">
               <h3 className="font-semibold mb-3">Casa em construção</h3>
@@ -554,6 +560,17 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
   const [legenda, setLegenda] = useState("");
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const [slideshow, setSlideshow] = useState(false);
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [compareMode, setCompareMode] = useState(false);
+  const [comparePair, setComparePair] = useState<[number, number] | null>(null);
+  const [pickA, setPickA] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!slideshow || fotos.length === 0) return;
+    const t = setInterval(() => setSlideIdx(i => (i + 1) % fotos.length), 3000);
+    return () => clearInterval(t);
+  }, [slideshow, fotos.length]);
 
   async function upload(file: File) {
     if (!userId) return;
@@ -606,6 +623,24 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
         </div>
       </Card>
 
+      {fotos.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={() => { setSlideIdx(0); setSlideshow(true); }}>
+            <Play className="h-4 w-4 mr-1" />Modo apresentação
+          </Button>
+          <Button size="sm" variant={compareMode ? "default" : "outline"}
+            onClick={() => { setCompareMode(v => !v); setPickA(null); setComparePair(null); }}>
+            <Columns2 className="h-4 w-4 mr-1" />
+            {compareMode ? "Cancelar comparação" : "Comparar 2 fotos"}
+          </Button>
+          {compareMode && (
+            <span className="text-xs text-muted-foreground self-center">
+              {pickA === null ? "Clique na 1ª foto" : "Agora clique na 2ª foto"}
+            </span>
+          )}
+        </div>
+      )}
+
       {fotos.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <ImageIcon className="h-12 w-12 mx-auto mb-3 opacity-30" />
@@ -615,8 +650,15 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {fotos.map((f: any, i: number) => (
-          <div key={f.id} className="rounded-xl overflow-hidden border border-border hover:border-primary/40 hover:shadow-md transition-all group relative">
-            <div className="aspect-video overflow-hidden bg-muted cursor-pointer" onClick={() => setLightbox(i)}>
+          <div key={f.id} className={`rounded-xl overflow-hidden border-2 hover:shadow-md transition-all group relative ${
+            compareMode && pickA === i ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary/40"
+          }`}>
+            <div className="aspect-video overflow-hidden bg-muted cursor-pointer" onClick={() => {
+              if (compareMode) {
+                if (pickA === null) setPickA(i);
+                else if (pickA !== i) { setComparePair([pickA, i]); setCompareMode(false); setPickA(null); }
+              } else setLightbox(i);
+            }}>
               <img src={f.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 alt={f.legenda || ""} />
             </div>
@@ -667,6 +709,54 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
                 <p className="text-white/70 text-sm capitalize">{fotos[lightbox].etapa}</p>
                 {fotos[lightbox].legenda && <p className="text-white text-sm">{fotos[lightbox].legenda}</p>}
                 <p className="text-white/50 text-xs mt-1">{lightbox + 1} / {fotos.length}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* SLIDESHOW */}
+      <Dialog open={slideshow} onOpenChange={setSlideshow}>
+        <DialogContent className="max-w-5xl p-0 bg-black border-0">
+          {fotos[slideIdx] && (
+            <div className="relative">
+              <img src={fotos[slideIdx].url} className="w-full max-h-[85vh] object-contain animate-fade-in" alt="" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-6 text-center">
+                <p className="text-white/70 text-sm capitalize">{fotos[slideIdx].etapa}</p>
+                {fotos[slideIdx].legenda && <p className="text-white text-lg font-semibold">{fotos[slideIdx].legenda}</p>}
+                <p className="text-white/50 text-xs mt-2">{slideIdx + 1} / {fotos.length} · autoplay 3s</p>
+              </div>
+              <button onClick={() => setSlideshow(false)}
+                className="absolute top-3 right-3 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* COMPARAÇÃO LADO A LADO */}
+      <Dialog open={!!comparePair} onOpenChange={(o) => !o && setComparePair(null)}>
+        <DialogContent className="max-w-6xl p-4 bg-background">
+          {comparePair && (
+            <div>
+              <p className="text-sm font-semibold mb-3 text-center">Comparação lado a lado</p>
+              <div className="grid grid-cols-2 gap-3">
+                {comparePair.map((idx, k) => {
+                  const f = fotos[idx];
+                  return (
+                    <div key={k} className="space-y-2">
+                      <img src={f.url} className="w-full rounded-lg border border-border" alt="" />
+                      <div className="text-xs">
+                        <Badge variant="outline" className="capitalize">{f.etapa}</Badge>
+                        <p className="mt-1 text-muted-foreground">
+                          {format(new Date(f.created_at), "dd/MM/yyyy")}
+                          {f.legenda && ` · ${f.legenda}`}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -723,6 +813,14 @@ function ChatTab({ obraId, msgs, userId }: any) {
 // ===== FINANCEIRO =====
 function FinanceiroTab({ obraId, fin, orcamento, gastos, valorPrev, userId, isOwner, onChange }: any) {
   const [form, setForm] = useState({ tipo: "gasto", descricao: "", valor: "", categoria: "" });
+  const [periodo, setPeriodo] = useState<"7"|"30"|"90"|"365"|"all">("all");
+  const finFiltrado = periodo === "all" ? fin : fin.filter((f: any) => {
+    if (!f.data && !f.created_at) return true;
+    const d = +new Date(f.data ?? f.created_at);
+    return Date.now() - d <= Number(periodo) * 86400000;
+  });
+  const orcFilt = finFiltrado.filter((f: any) => f.tipo === "orcamento").reduce((a: number, b: any) => a + Number(b.valor), 0);
+  const gastoFilt = finFiltrado.filter((f: any) => f.tipo === "gasto").reduce((a: number, b: any) => a + Number(b.valor), 0);
   async function add() {
     if (!form.descricao || !form.valor) return;
     const { error } = await supabase.from("financeiro").insert({
@@ -759,9 +857,24 @@ function FinanceiroTab({ obraId, fin, orcamento, gastos, valorPrev, userId, isOw
       )}
       <Card className="p-4">
         <h4 className="font-semibold mb-2">Histórico</h4>
-        {fin.length === 0 ? <p className="text-muted-foreground text-sm">Sem lançamentos</p> : (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {[
+            { v: "7", l: "7 dias" }, { v: "30", l: "30 dias" },
+            { v: "90", l: "90 dias" }, { v: "365", l: "1 ano" }, { v: "all", l: "Tudo" },
+          ].map(p => (
+            <Button key={p.v} size="sm" variant={periodo === p.v ? "default" : "outline"}
+              className="h-7 text-xs" onClick={() => setPeriodo(p.v as any)}>
+              {p.l}
+            </Button>
+          ))}
+          <span className="text-xs text-muted-foreground ml-auto self-center">
+            {finFiltrado.length} de {fin.length} · gasto R$ {gastoFilt.toLocaleString("pt-BR")}
+            {orcFilt > 0 && ` · orçado R$ ${orcFilt.toLocaleString("pt-BR")}`}
+          </span>
+        </div>
+        {finFiltrado.length === 0 ? <p className="text-muted-foreground text-sm">Sem lançamentos no período</p> : (
           <div className="space-y-1">
-            {fin.map((f: any) => (
+            {finFiltrado.map((f: any) => (
               <div key={f.id} className="flex justify-between py-2 border-b text-sm last:border-0">
                 <div><Badge variant={f.tipo === "gasto" ? "destructive" : "secondary"} className="mr-2">{f.tipo}</Badge>{f.descricao}</div>
                 <div className="font-mono">R$ {Number(f.valor).toLocaleString("pt-BR")}</div>
@@ -802,6 +915,35 @@ function DiarioTab({ obraId, diario, userId, onChange }: any) {
     const matchData = !filtroData || d.data === filtroData;
     return matchBusca && matchData;
   });
+  function imprimirDiario() {
+    if (filtrados.length === 0) { toast.error("Nenhum registro para imprimir"); return; }
+    const doc = new jsPDF();
+    doc.setFontSize(18); doc.text("Diário da obra", 14, 18);
+    doc.setFontSize(9); doc.setTextColor(120);
+    doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")} · ${filtrados.length} registros`, 14, 24);
+    doc.setTextColor(0);
+    let y = 34;
+    filtrados.forEach((d: any) => {
+      if (y > 275) { doc.addPage(); y = 20; }
+      doc.setFontSize(11); doc.setFont(undefined, "bold");
+      doc.text(`${format(new Date(d.data), "dd/MM/yyyy")} — ${d.titulo || "Sem título"}`, 14, y);
+      y += 6; doc.setFont(undefined, "normal"); doc.setFontSize(10);
+      const lines = doc.splitTextToSize(d.conteudo || "", 180);
+      lines.forEach((l: string) => {
+        if (y > 285) { doc.addPage(); y = 20; }
+        doc.text(l, 14, y); y += 5;
+      });
+      if (d.clima || d.trabalhadores) {
+        doc.setFontSize(8); doc.setTextColor(120);
+        doc.text(`${d.clima ? "Clima: " + d.clima : ""}${d.trabalhadores ? "  ·  " + d.trabalhadores + " trab." : ""}`, 14, y);
+        doc.setTextColor(0); doc.setFontSize(10);
+        y += 5;
+      }
+      y += 4;
+    });
+    doc.save(`diario-obra.pdf`);
+    toast.success("PDF do diário gerado");
+  }
   // agrupar por mês
   const grupos: Record<string, any[]> = {};
   filtrados.forEach((d: any) => {
@@ -829,6 +971,9 @@ function DiarioTab({ obraId, diario, userId, onChange }: any) {
           {(busca || filtroData) && (
             <Button variant="ghost" size="sm" onClick={() => { setBusca(""); setFiltroData(""); }}>Limpar</Button>
           )}
+          <Button variant="outline" size="sm" onClick={imprimirDiario}>
+            <Printer className="h-4 w-4 mr-1" />Imprimir PDF
+          </Button>
           <span className="text-xs text-muted-foreground ml-auto">
             {filtrados.length} de {diario.length} registros
           </span>
@@ -1294,5 +1439,35 @@ function PdfButton({ obra, etapas, fin, fotos }: any) {
     <Button onClick={baixar} disabled={loading}>
       {loading ? "Gerando narrativa IA..." : "Baixar PDF"}
     </Button>
+  );
+}
+
+// ===== KPIs VISÃO GERAL =====
+function KpisObra({ obra, fotos, diario, msgs, gastos, tarefasStats }: any) {
+  const dias = obra.data_inicio
+    ? Math.max(0, Math.round((Date.now() - +new Date(obra.data_inicio)) / (1000 * 60 * 60 * 24)))
+    : 0;
+  const pctTarefas = tarefasStats.total ? Math.round((tarefasStats.concluidas / tarefasStats.total) * 100) : 0;
+  const cards = [
+    { Icon: CalendarDays, label: "Dias em obra", value: dias, hint: obra.data_inicio ? `desde ${format(new Date(obra.data_inicio), "dd/MM/yy")}` : "sem data" },
+    { Icon: ImageIcon, label: "Fotos", value: fotos.length, hint: `${fotos.filter((f:any)=>Date.now()-+new Date(f.created_at)<7*86400000).length} na semana` },
+    { Icon: BookOpen, label: "Diário", value: diario.length, hint: "registros" },
+    { Icon: ListTodo, label: "Tarefas", value: `${tarefasStats.concluidas}/${tarefasStats.total}`, hint: `${pctTarefas}% concluídas` },
+    { Icon: MessageSquare, label: "Mensagens", value: msgs.length, hint: "no chat" },
+    { Icon: TrendingUp, label: "Gasto", value: `R$ ${(gastos/1000).toFixed(1)}k`, hint: obra.valor_previsto ? `de R$ ${(Number(obra.valor_previsto)/1000).toFixed(0)}k` : "sem previsão" },
+  ];
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
+      {cards.map(c => (
+        <Card key={c.label} className="p-3">
+          <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+            <c.Icon className="h-3.5 w-3.5" />
+            <span className="text-[10px] uppercase tracking-wide font-semibold">{c.label}</span>
+          </div>
+          <p className="text-xl font-extrabold leading-none">{c.value}</p>
+          <p className="text-[10px] text-muted-foreground mt-1 truncate">{c.hint}</p>
+        </Card>
+      ))}
+    </div>
   );
 }
