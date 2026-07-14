@@ -813,6 +813,14 @@ function ChatTab({ obraId, msgs, userId }: any) {
 // ===== FINANCEIRO =====
 function FinanceiroTab({ obraId, fin, orcamento, gastos, valorPrev, userId, isOwner, onChange }: any) {
   const [form, setForm] = useState({ tipo: "gasto", descricao: "", valor: "", categoria: "" });
+  const [periodo, setPeriodo] = useState<"7"|"30"|"90"|"365"|"all">("all");
+  const finFiltrado = periodo === "all" ? fin : fin.filter((f: any) => {
+    if (!f.data && !f.created_at) return true;
+    const d = +new Date(f.data ?? f.created_at);
+    return Date.now() - d <= Number(periodo) * 86400000;
+  });
+  const orcFilt = finFiltrado.filter((f: any) => f.tipo === "orcamento").reduce((a: number, b: any) => a + Number(b.valor), 0);
+  const gastoFilt = finFiltrado.filter((f: any) => f.tipo === "gasto").reduce((a: number, b: any) => a + Number(b.valor), 0);
   async function add() {
     if (!form.descricao || !form.valor) return;
     const { error } = await supabase.from("financeiro").insert({
@@ -849,9 +857,24 @@ function FinanceiroTab({ obraId, fin, orcamento, gastos, valorPrev, userId, isOw
       )}
       <Card className="p-4">
         <h4 className="font-semibold mb-2">Histórico</h4>
-        {fin.length === 0 ? <p className="text-muted-foreground text-sm">Sem lançamentos</p> : (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {[
+            { v: "7", l: "7 dias" }, { v: "30", l: "30 dias" },
+            { v: "90", l: "90 dias" }, { v: "365", l: "1 ano" }, { v: "all", l: "Tudo" },
+          ].map(p => (
+            <Button key={p.v} size="sm" variant={periodo === p.v ? "default" : "outline"}
+              className="h-7 text-xs" onClick={() => setPeriodo(p.v as any)}>
+              {p.l}
+            </Button>
+          ))}
+          <span className="text-xs text-muted-foreground ml-auto self-center">
+            {finFiltrado.length} de {fin.length} · gasto R$ {gastoFilt.toLocaleString("pt-BR")}
+            {orcFilt > 0 && ` · orçado R$ ${orcFilt.toLocaleString("pt-BR")}`}
+          </span>
+        </div>
+        {finFiltrado.length === 0 ? <p className="text-muted-foreground text-sm">Sem lançamentos no período</p> : (
           <div className="space-y-1">
-            {fin.map((f: any) => (
+            {finFiltrado.map((f: any) => (
               <div key={f.id} className="flex justify-between py-2 border-b text-sm last:border-0">
                 <div><Badge variant={f.tipo === "gasto" ? "destructive" : "secondary"} className="mr-2">{f.tipo}</Badge>{f.descricao}</div>
                 <div className="font-mono">R$ {Number(f.valor).toLocaleString("pt-BR")}</div>
