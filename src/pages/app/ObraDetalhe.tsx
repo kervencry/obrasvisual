@@ -27,6 +27,7 @@ import {
   ListChecks, Users, Copy, Download, Share2, Settings,
   ChevronLeft, ChevronRight, X, Trash2, Key, Ruler, GitCompare, Layers
 } from "lucide-react";
+import { Play, Pause as PauseIcon, Printer, Columns2, TrendingUp, CalendarDays } from "lucide-react";
 import jsPDF from "jspdf";
 import MembrosObra from "@/components/obra/MembrosObra";
 import { notificar, notificarMembros } from "@/lib/notificar";
@@ -108,6 +109,7 @@ export default function ObraDetalhe() {
   const [stage, setStage] = useState<ObraStage>("terreno");
   const [checklistEtapa, setChecklistEtapa] = useState<any>(null);
   const [paralisacaoAtiva, setParalisacaoAtiva] = useState(false);
+  const [tarefasStats, setTarefasStats] = useState({ total: 0, concluidas: 0 });
 
   async function refresh() {
     if (!id) return;
@@ -127,6 +129,9 @@ export default function ObraDetalhe() {
     if (o.data) setStage(o.data.etapa_atual);
     const { data: par } = await supabase.from("paralisacoes_obra").select("id").eq("obra_id", id).is("data_fim", null).limit(1);
     setParalisacaoAtiva((par ?? []).length > 0);
+    const { data: tarefas } = await (supabase as any).from("tarefas_obra").select("status").eq("obra_id", id);
+    const ts = (tarefas ?? []) as any[];
+    setTarefasStats({ total: ts.length, concluidas: ts.filter(t => t.status === "concluida").length });
   }
 
   useEffect(() => { refresh(); }, [id]);
@@ -229,6 +234,7 @@ export default function ObraDetalhe() {
           <div className="mb-4">
             <AlertaRiscoChuva lat={obra.latitude} lon={obra.longitude} etapas={etapas} />
           </div>
+          <KpisObra obra={obra} fotos={fotos} diario={diario} msgs={msgs} gastos={gastos} tarefasStats={tarefasStats} />
           <div className="grid lg:grid-cols-3 gap-4">
             <Card className="p-4 lg:col-span-2">
               <h3 className="font-semibold mb-3">Casa em construção</h3>
