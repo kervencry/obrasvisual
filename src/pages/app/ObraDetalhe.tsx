@@ -560,6 +560,17 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
   const [legenda, setLegenda] = useState("");
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const [slideshow, setSlideshow] = useState(false);
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [compareMode, setCompareMode] = useState(false);
+  const [comparePair, setComparePair] = useState<[number, number] | null>(null);
+  const [pickA, setPickA] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!slideshow || fotos.length === 0) return;
+    const t = setInterval(() => setSlideIdx(i => (i + 1) % fotos.length), 3000);
+    return () => clearInterval(t);
+  }, [slideshow, fotos.length]);
 
   async function upload(file: File) {
     if (!userId) return;
@@ -612,6 +623,24 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
         </div>
       </Card>
 
+      {fotos.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={() => { setSlideIdx(0); setSlideshow(true); }}>
+            <Play className="h-4 w-4 mr-1" />Modo apresentação
+          </Button>
+          <Button size="sm" variant={compareMode ? "default" : "outline"}
+            onClick={() => { setCompareMode(v => !v); setPickA(null); setComparePair(null); }}>
+            <Columns2 className="h-4 w-4 mr-1" />
+            {compareMode ? "Cancelar comparação" : "Comparar 2 fotos"}
+          </Button>
+          {compareMode && (
+            <span className="text-xs text-muted-foreground self-center">
+              {pickA === null ? "Clique na 1ª foto" : "Agora clique na 2ª foto"}
+            </span>
+          )}
+        </div>
+      )}
+
       {fotos.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <ImageIcon className="h-12 w-12 mx-auto mb-3 opacity-30" />
@@ -621,8 +650,15 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {fotos.map((f: any, i: number) => (
-          <div key={f.id} className="rounded-xl overflow-hidden border border-border hover:border-primary/40 hover:shadow-md transition-all group relative">
-            <div className="aspect-video overflow-hidden bg-muted cursor-pointer" onClick={() => setLightbox(i)}>
+          <div key={f.id} className={`rounded-xl overflow-hidden border-2 hover:shadow-md transition-all group relative ${
+            compareMode && pickA === i ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary/40"
+          }`}>
+            <div className="aspect-video overflow-hidden bg-muted cursor-pointer" onClick={() => {
+              if (compareMode) {
+                if (pickA === null) setPickA(i);
+                else if (pickA !== i) { setComparePair([pickA, i]); setCompareMode(false); setPickA(null); }
+              } else setLightbox(i);
+            }}>
               <img src={f.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 alt={f.legenda || ""} />
             </div>
@@ -673,6 +709,54 @@ function FotosTab({ obraId, fotos, stage, setStage, onUpload, userId }: any) {
                 <p className="text-white/70 text-sm capitalize">{fotos[lightbox].etapa}</p>
                 {fotos[lightbox].legenda && <p className="text-white text-sm">{fotos[lightbox].legenda}</p>}
                 <p className="text-white/50 text-xs mt-1">{lightbox + 1} / {fotos.length}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* SLIDESHOW */}
+      <Dialog open={slideshow} onOpenChange={setSlideshow}>
+        <DialogContent className="max-w-5xl p-0 bg-black border-0">
+          {fotos[slideIdx] && (
+            <div className="relative">
+              <img src={fotos[slideIdx].url} className="w-full max-h-[85vh] object-contain animate-fade-in" alt="" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-6 text-center">
+                <p className="text-white/70 text-sm capitalize">{fotos[slideIdx].etapa}</p>
+                {fotos[slideIdx].legenda && <p className="text-white text-lg font-semibold">{fotos[slideIdx].legenda}</p>}
+                <p className="text-white/50 text-xs mt-2">{slideIdx + 1} / {fotos.length} · autoplay 3s</p>
+              </div>
+              <button onClick={() => setSlideshow(false)}
+                className="absolute top-3 right-3 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* COMPARAÇÃO LADO A LADO */}
+      <Dialog open={!!comparePair} onOpenChange={(o) => !o && setComparePair(null)}>
+        <DialogContent className="max-w-6xl p-4 bg-background">
+          {comparePair && (
+            <div>
+              <p className="text-sm font-semibold mb-3 text-center">Comparação lado a lado</p>
+              <div className="grid grid-cols-2 gap-3">
+                {comparePair.map((idx, k) => {
+                  const f = fotos[idx];
+                  return (
+                    <div key={k} className="space-y-2">
+                      <img src={f.url} className="w-full rounded-lg border border-border" alt="" />
+                      <div className="text-xs">
+                        <Badge variant="outline" className="capitalize">{f.etapa}</Badge>
+                        <p className="mt-1 text-muted-foreground">
+                          {format(new Date(f.created_at), "dd/MM/yyyy")}
+                          {f.legenda && ` · ${f.legenda}`}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
