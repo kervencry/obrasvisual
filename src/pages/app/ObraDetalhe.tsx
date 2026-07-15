@@ -110,6 +110,7 @@ export default function ObraDetalhe() {
   const [checklistEtapa, setChecklistEtapa] = useState<any>(null);
   const [paralisacaoAtiva, setParalisacaoAtiva] = useState(false);
   const [tarefasStats, setTarefasStats] = useState({ total: 0, concluidas: 0 });
+  const [activeTab, setActiveTab] = useState<string>("visao");
 
   async function refresh() {
     if (!id) return;
@@ -191,7 +192,7 @@ export default function ObraDetalhe() {
         </div>
       </div>
 
-      <Tabs defaultValue="visao" orientation="vertical">
+      <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
         <div className="grid lg:grid-cols-[240px_1fr] gap-4 lg:gap-6">
           {/* SIDEBAR NAV — desktop */}
           <aside className="hidden lg:block">
@@ -216,15 +217,22 @@ export default function ObraDetalhe() {
             </div>
           </aside>
 
-          {/* MOBILE NAV — horizontal grouped */}
-          <div className="lg:hidden -mx-4 px-4 overflow-x-auto pb-2">
-            <TabsList className="flex w-max h-auto gap-1">
-              {buildNav(isOwner).flatMap(g => g.items).map(it => (
-                <TabsTrigger key={it.v} value={it.v} className="shrink-0">
-                  <it.Icon className="h-4 w-4 mr-1" />{it.label}
-                </TabsTrigger>
+          {/* MOBILE NAV — dropdown agrupado (sem rolagem horizontal) */}
+          <div className="lg:hidden mb-2">
+            <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1 block">Navegar</label>
+            <select
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value)}
+              className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              {buildNav(isOwner).map(group => (
+                <optgroup key={group.title} label={group.title}>
+                  {group.items.map(it => (
+                    <option key={it.v} value={it.v}>{it.label}</option>
+                  ))}
+                </optgroup>
               ))}
-            </TabsList>
+            </select>
           </div>
 
           <div className="min-w-0">
