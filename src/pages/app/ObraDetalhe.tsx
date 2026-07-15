@@ -468,6 +468,14 @@ export default function ObraDetalhe() {
           <AlertasTab obraId={obra.id} />
         </TabsContent>
 
+        <TabsContent value="estoque" className="mt-4">
+          <EstoqueTab obraId={obra.id} canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")} />
+        </TabsContent>
+
+        <TabsContent value="inspecoes" className="mt-4">
+          <InspecoesTab obraId={obra.id} canEdit={obra.owner_id === user?.id || ["engenheiro","arquiteto","mestre_obras","admin"].includes(role ?? "")} />
+        </TabsContent>
+
         <TabsContent value="exportar" className="mt-4">
           <Card className="p-6 text-center">
             <FileSpreadsheet className="h-12 w-12 mx-auto text-primary mb-3" />
