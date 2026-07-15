@@ -43,6 +43,7 @@ export default function ObraPublica() {
   const [assinatura, setAssinatura] = useState("");
   const [comentario, setComentario] = useState("");
   const [etapaAprov, setEtapaAprov] = useState("");
+  const [tabPub, setTabPub] = useState("visao");
 
   useEffect(() => {
     async function load() {
@@ -228,17 +229,31 @@ export default function ObraPublica() {
         </div>
 
         {/* TABS */}
-        <Tabs defaultValue="visao">
-          <div className="overflow-x-auto pb-1 mb-4">
-            <TabsList className="flex w-max h-auto gap-1">
-              <TabsTrigger value="visao"><TrendingUp className="h-4 w-4 mr-1" />Visão geral</TabsTrigger>
-              <TabsTrigger value="fotos"><Camera className="h-4 w-4 mr-1" />Fotos ({fotos.length})</TabsTrigger>
-              <TabsTrigger value="timeline"><Clock className="h-4 w-4 mr-1" />Histórico</TabsTrigger>
-              <TabsTrigger value="chat"><MessageSquare className="h-4 w-4 mr-1" />Chat</TabsTrigger>
-              <TabsTrigger value="aprov"><CheckCircle2 className="h-4 w-4 mr-1" />Aprovações</TabsTrigger>
-              <TabsTrigger value="antes"><ImageIcon className="h-4 w-4 mr-1" />Antes/depois</TabsTrigger>
-              <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1" />Relatório</TabsTrigger>
-            </TabsList>
+        <Tabs value={tabPub} onValueChange={setTabPub}>
+          {/* Desktop: grid de abas | Mobile: dropdown (sem rolagem horizontal) */}
+          <TabsList className="hidden md:grid grid-cols-7 h-auto gap-1 mb-4 w-full">
+            <TabsTrigger value="visao"><TrendingUp className="h-4 w-4 mr-1" />Visão</TabsTrigger>
+            <TabsTrigger value="fotos"><Camera className="h-4 w-4 mr-1" />Fotos</TabsTrigger>
+            <TabsTrigger value="timeline"><Clock className="h-4 w-4 mr-1" />Histórico</TabsTrigger>
+            <TabsTrigger value="chat"><MessageSquare className="h-4 w-4 mr-1" />Chat</TabsTrigger>
+            <TabsTrigger value="aprov"><CheckCircle2 className="h-4 w-4 mr-1" />Aprovações</TabsTrigger>
+            <TabsTrigger value="antes"><ImageIcon className="h-4 w-4 mr-1" />Antes/depois</TabsTrigger>
+            <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1" />Relatório</TabsTrigger>
+          </TabsList>
+          <div className="md:hidden mb-4">
+            <select
+              value={tabPub}
+              onChange={(e) => setTabPub(e.target.value)}
+              className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="visao">Visão geral</option>
+              <option value="fotos">Fotos ({fotos.length})</option>
+              <option value="timeline">Histórico</option>
+              <option value="chat">Chat</option>
+              <option value="aprov">Aprovações</option>
+              <option value="antes">Antes / depois</option>
+              <option value="relatorio">Relatório</option>
+            </select>
           </div>
 
           {/* VISÃO GERAL */}

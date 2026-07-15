@@ -197,6 +197,70 @@ export type Database = {
           },
         ]
       }
+      estoque_movimentos: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data: string
+          financeiro_id: string | null
+          id: string
+          material_id: string
+          obra_id: string
+          observacoes: string | null
+          quantidade: number
+          responsavel: string | null
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          financeiro_id?: string | null
+          id?: string
+          material_id: string
+          obra_id: string
+          observacoes?: string | null
+          quantidade: number
+          responsavel?: string | null
+          tipo: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          financeiro_id?: string | null
+          id?: string
+          material_id?: string
+          obra_id?: string
+          observacoes?: string | null
+          quantidade?: number
+          responsavel?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_movimentos_financeiro_id_fkey"
+            columns: ["financeiro_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estoque_movimentos_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materiais_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estoque_movimentos_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       etapas: {
         Row: {
           created_at: string
@@ -334,6 +398,115 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fotos_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inspecoes_qualidade: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data_inspecao: string
+          etapa: string | null
+          id: string
+          itens: Json
+          nao_conformidade: string | null
+          obra_id: string
+          observacoes: string | null
+          responsavel: string | null
+          status: string
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data_inspecao?: string
+          etapa?: string | null
+          id?: string
+          itens?: Json
+          nao_conformidade?: string | null
+          obra_id: string
+          observacoes?: string | null
+          responsavel?: string | null
+          status?: string
+          tipo: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data_inspecao?: string
+          etapa?: string | null
+          id?: string
+          itens?: Json
+          nao_conformidade?: string | null
+          obra_id?: string
+          observacoes?: string | null
+          responsavel?: string | null
+          status?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspecoes_qualidade_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materiais_estoque: {
+        Row: {
+          categoria: string | null
+          created_at: string
+          created_by: string | null
+          estoque_minimo: number
+          id: string
+          nome: string
+          obra_id: string
+          observacoes: string | null
+          saldo: number
+          unidade: string
+          updated_at: string
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string
+          created_by?: string | null
+          estoque_minimo?: number
+          id?: string
+          nome: string
+          obra_id: string
+          observacoes?: string | null
+          saldo?: number
+          unidade?: string
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string
+          created_by?: string | null
+          estoque_minimo?: number
+          id?: string
+          nome?: string
+          obra_id?: string
+          observacoes?: string | null
+          saldo?: number
+          unidade?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materiais_estoque_obra_id_fkey"
             columns: ["obra_id"]
             isOneToOne: false
             referencedRelation: "obras"
