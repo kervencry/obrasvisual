@@ -47,7 +47,9 @@ import SegurancaTab from "@/components/obra/SegurancaTab";
 import PontoTab from "@/components/obra/PontoTab";
 import AlertasTab from "@/components/obra/AlertasTab";
 import { exportarObraXLSX } from "@/lib/exportarObra";
-import { Sparkles, ListTodo, CalendarClock, Package, FolderOpen, Pause, FileSpreadsheet, Building2, HardHat, UserCheck, AlertTriangle } from "lucide-react";
+import { Sparkles, ListTodo, CalendarClock, Package, FolderOpen, Pause, FileSpreadsheet, Building2, HardHat, UserCheck, AlertTriangle, Boxes, ClipboardCheck } from "lucide-react";
+import EstoqueTab from "@/components/obra/EstoqueTab";
+import InspecoesTab from "@/components/obra/InspecoesTab";
 
 // ==== Navegação categorizada (substitui a barra horizontal única) ====
 type NavItem = { v: string; label: string; Icon: any };
@@ -76,6 +78,8 @@ function buildNav(isOwner: boolean): { title: string; items: NavItem[] }[] {
       { v: "equipe", label: "Equipe", Icon: Users },
       { v: "seguranca", label: "Segurança", Icon: HardHat },
       { v: "ponto", label: "Ponto", Icon: UserCheck },
+      { v: "estoque", label: "Estoque", Icon: Boxes },
+      { v: "inspecoes", label: "Inspeções (FVS/FVM)", Icon: ClipboardCheck },
       { v: "alertas", label: "Alertas", Icon: AlertTriangle },
       { v: "aprov", label: "Aprovações", Icon: CheckCircle2 },
       { v: "paralisacoes", label: "Paralisações", Icon: Pause },
