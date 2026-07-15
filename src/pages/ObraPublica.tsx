@@ -43,6 +43,7 @@ export default function ObraPublica() {
   const [assinatura, setAssinatura] = useState("");
   const [comentario, setComentario] = useState("");
   const [etapaAprov, setEtapaAprov] = useState("");
+  const [tabPub, setTabPub] = useState("visao");
 
   useEffect(() => {
     async function load() {
@@ -228,7 +229,7 @@ export default function ObraPublica() {
         </div>
 
         {/* TABS */}
-        <Tabs defaultValue="visao">
+        <Tabs value={tabPub} onValueChange={setTabPub}>
           {/* Desktop: grid de abas | Mobile: dropdown (sem rolagem horizontal) */}
           <TabsList className="hidden md:grid grid-cols-7 h-auto gap-1 mb-4 w-full">
             <TabsTrigger value="visao"><TrendingUp className="h-4 w-4 mr-1" />Visão</TabsTrigger>
@@ -239,7 +240,21 @@ export default function ObraPublica() {
             <TabsTrigger value="antes"><ImageIcon className="h-4 w-4 mr-1" />Antes/depois</TabsTrigger>
             <TabsTrigger value="relatorio"><FileText className="h-4 w-4 mr-1" />Relatório</TabsTrigger>
           </TabsList>
-          <MobileTabSelector fotosCount={fotos.length} />
+          <div className="md:hidden mb-4">
+            <select
+              value={tabPub}
+              onChange={(e) => setTabPub(e.target.value)}
+              className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="visao">Visão geral</option>
+              <option value="fotos">Fotos ({fotos.length})</option>
+              <option value="timeline">Histórico</option>
+              <option value="chat">Chat</option>
+              <option value="aprov">Aprovações</option>
+              <option value="antes">Antes / depois</option>
+              <option value="relatorio">Relatório</option>
+            </select>
+          </div>
 
           {/* VISÃO GERAL */}
           <TabsContent value="visao">
